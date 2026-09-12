@@ -1,0 +1,975 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>cv-chat Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oxygen:wght@700&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,400&display=swap">
+<style>
+  :root {
+    --yellow: #F7B943;
+    --yellow-press: #EAA52A;
+    --on-brand: #ffffff;
+    --on-taupe: #1f2a33;
+    --taupe: #b6a999;
+    --bubble: #b6a999;
+    --on-bubble: #1f2a33;
+    --ink: #22303a;
+    --ink-soft: #5d6770;
+    --paper: #faf8f5;
+    --surface: #ffffff;
+    --line: #e3ddd4;
+    --chip-hover: #efeae3;
+    --ok: #2d7a4c;
+    --ok-soft: #e6f2ea;
+    --err: #b3261e;
+    --err-soft: #fbebe9;
+    --warn-soft: #fdf1d9;
+    --focus: #22303a;
+    --bar: #efebe5;
+
+    --font-display: "Oxygen", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Source Sans 3", "Source Sans Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --gutter: max(16px, calc((100% - 760px) / 2));
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bubble: #4a4239;
+      --on-bubble: #f3eee7;
+      --ink: #eee9e2;
+      --ink-soft: #aaa196;
+      --paper: #181614;
+      --surface: #221f1c;
+      --line: #36312b;
+      --chip-hover: #2c2824;
+      --ok: #7cc79a;
+      --ok-soft: #1d2b22;
+      --err: #f0908a;
+      --err-soft: #331e1c;
+      --warn-soft: #33291a;
+      --focus: #F7B943;
+      --bar: #201d1a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bubble: #4a4239;
+    --on-bubble: #f3eee7;
+    --ink: #eee9e2;
+    --ink-soft: #aaa196;
+    --paper: #181614;
+    --surface: #221f1c;
+    --line: #36312b;
+    --chip-hover: #2c2824;
+    --ok: #7cc79a;
+    --ok-soft: #1d2b22;
+    --err: #f0908a;
+    --err-soft: #331e1c;
+    --warn-soft: #33291a;
+    --focus: #F7B943;
+    --bar: #201d1a;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* Proposal toolbar (not part of the design) */
+  .proto-bar {
+    background: var(--bar);
+    border-bottom: 1px solid var(--line);
+    padding: 10px var(--gutter);
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px;
+    font-size: 14px; color: var(--ink-soft);
+  }
+  .proto-bar strong { color: var(--ink); font-weight: 600; }
+  .proto-states { display: flex; flex-wrap: wrap; gap: 6px; }
+  .proto-states button {
+    border: 1px solid var(--line); background: var(--surface);
+    border-radius: 999px; padding: 3px 11px; font-size: 13.5px; cursor: pointer;
+  }
+  .proto-states button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* App */
+  .app {
+    min-height: calc(100dvh - var(--proto-bar-h, 0px));
+    display: flex; flex-direction: column;
+    background: var(--paper);
+  }
+  /* Sizes and breakpoints copied from overeem.io's BannerSection */
+  .masthead { display: flex; flex-wrap: wrap; }
+  .brand, .banner { width: 100%; height: 24rem; }
+  .brand {
+    background: var(--yellow);
+    color: var(--on-brand);
+    padding: 2.5rem 2rem;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;
+  }
+  .brand h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.875rem;
+    line-height: 1.25;
+    margin: 0;
+  }
+  .brand p { margin: 0; font-weight: 300; font-size: 1.5rem; line-height: 1.3; }
+  .brand-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .place { display: inline-flex; align-items: center; gap: 1.5rem; margin-block: 1rem; font-size: 1.25rem; }
+  .place svg { height: 2rem; width: auto; }
+  .banner { object-fit: cover; object-position: 50%; display: block; max-width: 100%; }
+  @media (min-width: 576px) {
+    .brand, .banner { width: 50%; }
+    .brand { padding-inline: 1.5rem; }
+    .brand h1 { font-size: 1.5rem; }
+    .brand p { font-size: 1.25rem; }
+    .place { font-size: 1.125rem; }
+    .place svg { height: 1.5rem; }
+  }
+  @media (min-width: 768px) {
+    .brand { padding-inline: 2.5rem; }
+    .brand h1 { font-size: 2.25rem; }
+    .brand p { font-size: 1.5rem; }
+    .place { font-size: 1.25rem; }
+    .place svg { height: 2rem; }
+  }
+  @media (min-width: 992px) {
+    .brand, .banner { height: 32rem; }
+    .brand h1 { font-size: 3rem; }
+    .brand p { font-size: 1.875rem; }
+    .place { font-size: 1.5rem; }
+    .place svg { height: 2.5rem; }
+  }
+  @media (min-width: 1200px) {
+    .brand h1 { font-size: 4rem; }
+    .brand p { font-size: 2.25rem; }
+    .place { font-size: 1.875rem; }
+  }
+  .btn-new {
+    flex: none;
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--surface); border: 1px solid var(--line); color: var(--ink);
+    border-radius: 999px; padding: 3px 11px; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer;
+  }
+  .btn-new:hover:not(:disabled) { border-color: var(--taupe); background: var(--chip-hover); }
+  .btn-new:disabled { opacity: .5; cursor: not-allowed; }
+
+  .thread {
+    flex: 1;
+    padding: 36px var(--gutter) 8px;
+    display: flex; flex-direction: column; gap: 18px;
+  }
+
+  .intro { display: flex; flex-direction: column; gap: 18px; max-width: 62ch; }
+  .intro p { margin: 0; }
+  .who {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .who::before { content: ""; width: 8px; height: 8px; background: var(--yellow); }
+  .suggest-label { font-size: 15px; color: var(--ink-soft); margin: 0 0 -8px; }
+  .suggestions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .suggestions button {
+    text-align: left; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--taupe);
+    border-radius: 12px; padding: 12px 14px; font-size: 16px; line-height: 1.35;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    transition: background .15s;
+  }
+  .suggestions button::after { content: "→"; color: var(--taupe); flex: none; }
+  .suggestions button:hover { background: var(--chip-hover); }
+  @media (max-width: 560px) { .suggestions { grid-template-columns: 1fr; } }
+
+  .msg { max-width: 62ch; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .msg.assistant { display: flex; flex-direction: column; gap: 4px; }
+  .msg.user {
+    align-self: flex-end; max-width: min(80%, 52ch);
+    background: var(--bubble); color: var(--on-bubble);
+    padding: 9px 15px; border-radius: 18px 18px 4px 18px;
+  }
+  .caret {
+    display: inline-block; width: .5em; height: 1.05em; margin-left: 2px;
+    background: var(--yellow); vertical-align: -0.15em;
+    animation: blink 1s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .dots { display: inline-flex; gap: 5px; padding: 8px 0; }
+  .dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--taupe); animation: bounce 1.2s infinite ease-in-out; }
+  .dots span:nth-child(2) { animation-delay: .15s; }
+  .dots span:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .caret, .dots span { animation: none; } }
+  .cutoff { font-size: 14.5px; font-style: italic; color: var(--ink-soft); }
+
+  .notice {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px;
+    font-size: 15.5px; padding: 10px 14px; border-radius: 10px; max-width: 62ch;
+  }
+  .notice svg { flex: none; }
+  .notice.ok { background: var(--ok-soft); color: var(--ok); font-weight: 600; }
+  .notice.err { background: var(--err-soft); color: var(--err); }
+  .notice.warn { background: var(--warn-soft); color: var(--ink); }
+  .notice button {
+    background: var(--surface); border: 1px solid currentColor; color: inherit;
+    border-radius: 8px; padding: 3px 10px; font-size: 14.5px; font-weight: 600; cursor: pointer;
+  }
+
+  .composer-wrap {
+    padding: 12px var(--gutter) 2rem;
+  }
+  .composer {
+    display: flex; align-items: flex-end; gap: 8px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 16px; padding: 8px 8px 8px 16px;
+    box-shadow: 0 1px 2px rgba(34, 48, 58, .05), 0 6px 20px -12px rgba(34, 48, 58, .25);
+    transition: border-color .15s;
+  }
+  .composer:focus-within { border-color: var(--taupe); }
+  .composer textarea {
+    flex: 1; border: 0; outline: 0; background: transparent; resize: none;
+    padding: 7px 0; max-height: 9.5em; line-height: 1.45; font-size: 17px;
+  }
+  .composer textarea::placeholder { color: var(--ink-soft); opacity: 1; }
+  .count { align-self: center; font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .count.over { color: var(--err); font-weight: 600; }
+  .send {
+    flex: none; width: 40px; height: 40px; border: 0; border-radius: 11px;
+    background: var(--yellow); color: var(--on-brand);
+    display: grid; place-items: center; cursor: pointer;
+  }
+  .send:hover { background: var(--yellow-press); }
+  .send:disabled { opacity: .45; cursor: not-allowed; }
+  .composer-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px 20px; margin: 8px 4px 0; }
+  .fineprint { margin: 0; font-size: 13px; line-height: 1.45; color: var(--ink-soft); max-width: 72ch; }
+  @media (max-width: 560px) { .composer-meta { flex-direction: column-reverse; } }
+  .fineprint button {
+    background: none; border: 0; padding: 0; cursor: pointer;
+    color: var(--ink); text-decoration: underline; text-decoration-color: var(--taupe); text-underline-offset: 2px;
+    font-size: inherit;
+  }
+
+  /* Footer: overeem.io's taupe contact block */
+  .site-footer {
+    background: var(--taupe); color: var(--on-taupe);
+    padding: 1.5rem var(--gutter) max(1.5rem, env(safe-area-inset-bottom));
+  }
+  .footer-links { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 36px; margin: 0; padding: 0; list-style: none; }
+  .footer-links a {
+    display: inline-flex; align-items: center; gap: 9px;
+    color: inherit; font-size: 16px; text-decoration: none;
+  }
+  .footer-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .footer-links a:focus-visible { outline-color: var(--on-taupe); }
+  .footer-links svg { flex: none; width: 22px; height: 22px; }
+  #footer-linkedin svg { width: 24px; height: 24px; }
+
+  /* Privacy dialog */
+  dialog {
+    border: 0; border-radius: 16px; padding: 0; width: min(640px, calc(100% - 32px));
+    background: var(--surface); color: var(--ink);
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, .4);
+  }
+  dialog { max-height: calc(100dvh - 32px); overflow: auto; }
+  .conv-id { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 15px; }
+  .conv-id code { font-size: 14px; padding: 2px 8px; border-radius: 6px; background: var(--chip-hover); font-variant-numeric: tabular-nums; }
+  .conv-id button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 2px 10px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .dlg-body h3 { margin: 6px 0 -4px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); font-weight: 600; }
+  dialog::backdrop { background: rgba(24, 22, 20, .45); }
+  .dlg-head { background: var(--yellow); color: var(--on-brand); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .dlg-head h2 { margin: 0; font-family: var(--font-display); font-size: 21px; }
+  .dlg-head button { background: none; border: 0; cursor: pointer; color: var(--on-brand); padding: 4px; display: grid; }
+  .dlg-body { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 12px; font-size: 16px; }
+  .dlg-body p { margin: 0; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); }
+  th { font-size: 12.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); font-weight: 600; }
+
+  /* Design notes */
+  .notes { padding: 48px var(--gutter) 64px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 36px; }
+  .notes h2 { font-family: var(--font-display); font-size: 24px; margin: 0 0 4px; text-wrap: balance; }
+  .notes h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); margin: 0 0 12px; font-weight: 600; }
+  .notes > p { margin: 0; max-width: 62ch; color: var(--ink-soft); }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+  .swatch { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .swatch i { display: block; height: 56px; border-radius: 8px; border: 1px solid var(--line); }
+  .swatch b { font-weight: 600; }
+  .swatch code { font-size: 13px; color: var(--ink-soft); }
+  .type-row { display: flex; flex-wrap: wrap; gap: 24px 48px; align-items: baseline; }
+  .type-row div { display: flex; flex-direction: column; gap: 2px; }
+  .type-row small { font-size: 13px; color: var(--ink-soft); }
+  .spec-display { font-family: var(--font-display); font-weight: 700; font-size: 30px; }
+  .spec-body { font-size: 20px; font-weight: 300; }
+  .decisions { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 10px; max-width: 70ch; }
+  .decisions li::marker { color: var(--taupe); }
+
+  /* Language and theme switches */
+  .masthead { position: relative; }
+  .site-controls { position: absolute; top: 14px; right: 14px; display: flex; gap: 8px; }
+  .seg {
+    display: inline-flex; gap: 2px; padding: 3px;
+    background: rgba(20, 18, 16, .62); border-radius: 999px;
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  }
+  .seg a, .seg button {
+    display: grid; place-items: center; height: 30px; min-width: 36px; padding: 0 10px;
+    border: 0; border-radius: 999px; background: transparent; color: #fff;
+    font-size: 13.5px; font-weight: 600; letter-spacing: .04em; text-decoration: none; cursor: pointer;
+  }
+  .seg button.icon { padding: 0; width: 32px; min-width: 0; }
+  .seg a:hover, .seg button:hover { background: rgba(255, 255, 255, .16); }
+  .seg [aria-checked="true"] { background: #fff; color: #22303a; }
+  .seg :focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+  @media (max-width: 575px) { .brand { padding-top: 4.75rem; } }
+</style>
+
+<div class="proto-bar" role="region" aria-label="Prototype controls">
+  <strong>Design proposal</strong>
+  <span>Show state:</span>
+  <div class="proto-states" id="states">
+    <button type="button" data-state="empty" aria-pressed="false">Start</button>
+    <button type="button" data-state="conversation" aria-pressed="true">Conversation</button>
+    <button type="button" data-state="streaming" aria-pressed="false">Streaming</button>
+    <button type="button" data-state="meeting" aria-pressed="false">Meeting sent</button>
+    <button type="button" data-state="error" aria-pressed="false">Error</button>
+    <button type="button" data-state="ratelimit" aria-pressed="false">Rate limited</button>
+  </div>
+</div>
+
+<main class="app">
+  <header class="masthead">
+    <div class="brand">
+      <div>
+        <h1>Gerwin Overeem</h1>
+        <p data-i18n="subtitle"></p>
+      </div>
+      <div class="brand-foot">
+        <span class="place">
+          <svg width="22" height="32" viewBox="0 0 36 53" aria-hidden="true" focusable="false"><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g transform="translate(-83.000000, -424.000000)" fill="currentColor"><g transform="translate(0.000000, -22.000000)"><path d="M101,446 C89.872727,446 83,453.445455 83,464 C83,475.290908 100.018181,497.872728 100.018181,497.872728 C100.590909,498.609093 101.409091,498.609093 101.981817,497.872728 C101.981817,497.872728 119,475.290912 119,464 C119,453.445455 111.718181,446 101,446 Z M107.709091,483.472727 C105.909091,486.5 103.945455,489.445453 101.981819,492.30909 C101.654546,492.799997 101.327274,493.209088 101,493.618179 L100.018181,492.30909 C98.0545451,489.52727 96.0909083,486.5 94.2909084,483.472727 C92.818181,481.018181 91.4272721,478.563636 90.2818179,476.354544 C87.7454543,471.118181 86.2727269,466.781816 86.2727269,463.999998 C86.2727269,454.999998 91.9181815,449.272726 101,449.272726 C109.836363,449.272726 115.727273,455.245453 115.727273,463.999998 C115.727273,466.781816 114.254546,471.118179 111.636364,476.354544 C110.490908,478.563636 109.181818,481.018181 107.709091,483.472727 Z M101,453.363636 C95.5999997,453.363636 91.1818182,457.781818 91.1818182,463.181818 C91.1818182,468.581818 95.5999997,473 101,473 C106.4,473 110.818182,468.581818 110.818182,463.181818 C110.818182,457.781818 106.4,453.363636 101,453.363636 Z M101,469.727273 C97.4000002,469.727273 94.4545455,466.781818 94.4545455,463.181818 C94.4545455,459.581818 97.4000002,456.636364 101,456.636364 C104.6,456.636364 107.545455,459.581818 107.545455,463.181818 C107.545455,466.781818 104.6,469.727273 101,469.727273 Z"></path></g></g></g></svg>
+          Apeldoorn
+        </span>
+      </div>
+    </div>
+    <img class="banner" src="banner.jpg" data-i18n-attr="alt:photoAlt" alt="">
+
+    <div class="site-controls">
+      <div class="seg" id="langs" role="radiogroup" data-i18n-attr="aria-label:langGroup">
+        <button type="button" role="radio" lang="nl" data-lang="nl" aria-label="Nederlands">NL</button>
+        <button type="button" role="radio" lang="en" data-lang="en" aria-label="English">EN</button>
+      </div>
+      <div class="seg" id="themes" role="radiogroup" data-i18n-attr="aria-label:themeGroup">
+        <button type="button" role="radio" class="icon" data-theme-choice="light" data-i18n-attr="aria-label:themeLight,title:themeLight">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <button type="button" role="radio" class="icon" data-theme-choice="dark" data-i18n-attr="aria-label:themeDark,title:themeDark">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+        </button>
+        <button type="button" role="radio" class="icon" data-theme-choice="system" data-i18n-attr="aria-label:themeSystem,title:themeSystem">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="thread" id="thread" aria-live="polite" data-i18n-attr="aria-label:threadLabel"></section>
+
+  <div class="composer-wrap">
+    <form class="composer" id="composer">
+      <label for="composer-input" class="sr-only" data-i18n="inputLabel"></label>
+      <textarea id="composer-input" rows="1" maxlength="1200" data-i18n-attr="placeholder:placeholder"></textarea>
+      <span class="count" id="count" hidden></span>
+      <button type="submit" class="send" id="send" data-i18n-attr="aria-label:send">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </button>
+    </form>
+    <div class="composer-meta">
+      <p class="fineprint">
+        <span data-i18n="privacyLine"></span> <button type="button" id="open-privacy" data-i18n="privacyLink"></button>
+      </p>
+      <button type="button" class="btn-new" id="btn-new" hidden>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span data-i18n="newChat"></span>
+      </button>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <nav data-i18n-attr="aria-label:contactLabel">
+    <ul class="footer-links">
+      <li>
+        <a href="mailto:gerwin@overeem.io" id="footer-email">
+          <svg width="32" height="32" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g transform="translate(-1089.000000, -627.000000)" fill="currentColor"><g transform="translate(922.000000, 584.000000)"><path d="M167,69.3494678 L167,102.522898 L187.422082,86.6833341 L167,69.3494678 Z M228.565105,64.7669514 L201.269252,43.7471493 C199.974193,42.7509502 197.882175,42.7509502 196.587115,43.7471493 L169.191639,64.7669514 L198.878372,89.3730687 L228.565105,64.7669495 L228.565105,64.7669514 Z M199.675331,95.7487447 C199.27685,96.0476037 198.579511,96.1472259 198.181032,95.7487447 L190.709539,89.4726909 L168.992398,106.208836 C169.590118,106.507695 170.287457,106.706935 170.984797,106.706935 L226.771948,106.706935 C227.469288,106.706935 228.166628,106.507695 228.764346,106.208836 L207.047206,89.4726909 L199.675331,95.7487447 Z M210.334662,86.6833341 L230.756744,102.522902 L230.756744,69.3494716 L210.334662,86.6833341 Z"></path></g></g></g></svg>
+          <span>gerwin@overeem.io</span>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/gerwinovereem" id="footer-linkedin" rel="noreferrer nofollow" target="_blank">
+          <svg width="32" height="32" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g transform="translate(-1216.000000, -629.000000)" fill="currentColor"><g transform="translate(922.000000, 584.000000)"><path d="M326,45 C308.299999,45 294,59.3000001 294,77 C294,94.7000007 308.3,109 326,109 C343.700001,109 358,94.7000007 358,77 C358,59.2999992 343.700001,45 326,45 Z M311,62 C311.6,61.2999992 312.5,61 313.5,61 C314.5,61 315.4,61.2999992 316,62 C316.6,62.7000007 317,63.5 317,64.5 C317,65.5 316.700001,66.2999992 316,67 C315.4,67.7000007 314.5,68 313.4,68 C312.4,68 311.5,67.7000007 310.9,67 C310.299999,66.2999992 310,65.5 310,64.5 C310,63.5 310.299999,62.7000007 311,62 Z M317,92 L310,92 L310,71 L317,71 L317,92 Z M343,92 L335.799999,92 L335.799999,81 C335.799999,79.5999984 335.5,78.4000015 334.899998,77.5999984 C334.299999,76.7999992 333.399998,76.3999977 332.099998,76.3999977 C331.199997,76.3999977 330.399998,76.5999984 329.799999,77.0999984 C329.200001,77.5999984 328.700001,78.1999969 328.399998,78.8999977 C328.199997,79.2999992 328.199997,79.8999977 328.199997,80.5999984 L328.199997,92 L320.999996,92 L320.999996,71.5 L328.199997,71.5 L328.199997,74.3999996 C328.499996,74 328.799995,73.6000003 329.099998,73.2999992 C329.399998,73 329.799999,72.5999984 330.299999,72.1999988 C330.799999,71.7999992 331.5,71.499998 332.200001,71.2999992 C333,71.0999984 333.799999,71 334.700001,71 C337.200001,71 339.200001,71.7999992 340.700001,73.3999996 C342.200001,75 343,77.2999992 343,80.2999992 L343,92 Z"></path></g></g></g></svg>
+          <span>LinkedIn</span>
+        </a>
+      </li>
+    </ul>
+    </nav>
+  </footer>
+</main>
+
+<dialog id="privacy" aria-labelledby="privacy-title">
+  <div class="dlg-head">
+    <h2 id="privacy-title">Privacy</h2>
+    <button type="button" id="close-privacy" data-i18n-attr="aria-label:close">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="dlg-body">
+    <p data-i18n="privacyWho"></p>
+    <h3 data-i18n="privacyConvTitle"></h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th data-i18n="thService"></th><th data-i18n="thWhat"></th><th data-i18n="thHowLong"></th></tr></thead>
+        <tbody id="privacy-rows"></tbody>
+      </table>
+    </div>
+    <h3 data-i18n="privacyMeetTitle"></h3>
+    <p data-i18n="privacyMeet"></p>
+    <h3 data-i18n="privacyCookiesTitle"></h3>
+    <p data-i18n="privacyCookies"></p>
+    <h3 data-i18n="privacyRightsTitle"></h3>
+    <p data-i18n="privacyRights"></p>
+    <p class="conv-id"><span data-i18n="convIdLabel"></span> <code id="conv-id"></code> <button type="button" id="copy-conv-id" data-i18n="copy"></button></p>
+  </div>
+</dialog>
+
+<section class="notes" aria-labelledby="notes-title">
+  <div>
+    <h2 id="notes-title">Design notes</h2>
+    <p style="margin:0;max-width:62ch;color:var(--ink-soft)">The chat is the whole page. overeem.io's yellow banner is the header; the conversation below it follows the modern chat pattern. All answers in this prototype are sample text; anything in [brackets] would come from the real CV.</p>
+  </div>
+
+  <div>
+    <h3>Palette</h3>
+    <div class="swatches">
+      <div class="swatch"><i style="background:#F7B943"></i><b>Primary</b><code>#F7B943</code><span>Header, send button, streaming cursor</span></div>
+      <div class="swatch"><i style="background:#b6a999"></i><b>Secondary</b><code>#b6a999</code><span>Visitor bubbles, suggestion borders, loading dots</span></div>
+      <div class="swatch"><i style="background:#22303a"></i><b>Ink</b><code>#22303a</code><span>Text. Deepened from the slate on overeem.io</span></div>
+      <div class="swatch"><i style="background:#faf8f5"></i><b>Paper</b><code>#faf8f5</code><span>Background, warmed slightly toward the taupe</span></div>
+      <div class="swatch"><i style="background:#181614"></i><b>Paper (dark)</b><code>#181614</code><span>Dark mode: bubbles become #4a4239, the yellow stays</span></div>
+    </div>
+  </div>
+
+  <div>
+    <h3>Type</h3>
+    <div class="type-row">
+      <div><span class="spec-display">Oxygen Bold</span><small>Name and headings only, as on overeem.io</small></div>
+      <div><span class="spec-body">Source Sans 3 Light / Regular</span><small>Everything else (the successor to Source Sans Pro, which overeem.io uses)</small></div>
+    </div>
+  </div>
+
+  <div>
+    <h3>Decisions</h3>
+    <ul class="decisions">
+      <li>Language and theme switches sit top-right in the header, on a dark see-through pill so they read on both the yellow and the photo. Both are radio groups: the checked option is the one tab stop, and arrow keys move between options.</li>
+      <li>"NL | EN" switches in place on one URL, as in the spec. A click is remembered in <code>localStorage</code>; without one the page follows the browser's languages, falling back to English. Switching keeps the conversation: the UI copy changes, earlier answers stay in their language, and new answers follow the new language.</li>
+      <li>Theme: Licht, Donker and Automatisch, in the spec's order, with Automatisch as the default. The choice is remembered in <code>localStorage</code>; <code>@nuxtjs/color-mode</code> applies it before the first paint, so dark-mode visitors don't see a white flash.</li>
+      <li>Everything placed on the brand yellow is white, as on overeem.io: the header text, the send button arrow and the privacy note's title bar. This is a deliberate exception to the spec's WCAG AA rule. White on #F7B943 is 1.75:1, against 4.5:1 for normal text, 3:1 for large text and 3:1 for icons. White would reach 3:1 on #bc8d33 and 4.5:1 on #957029; dark slate (#22303a) on the current yellow is 7.7:1.</li>
+      <li>Answers have no bubble. They're plain text with <code>white-space: pre-wrap</code>, so the model's line breaks (like the meeting summary) survive without Markdown, and they're rendered with text interpolation, never <code>v-html</code>. Only the visitor's own messages get a taupe bubble.</li>
+      <li>The header is the overeem.io banner at exactly the site's sizes: 24rem tall, 32rem from 992px, side by side from 576px and stacked below that, with the same type sizes per breakpoint.</li>
+      <li>Every state maps to the API contract. <code>meeting_sent</code> shows a green confirmation line that stays even if the stream then errors. An <code>error</code> event shows a retry button and keeps the partial answer out of the history. A 429 shows the "Even rustig aan" message. A cut-off answer gets a note.</li>
+      <li>Input field: Enter sends and Shift+Enter adds a new line. The character counter appears from 900 characters and turns red past 1000, the server-side limit. Sending is disabled while an answer is streaming. "Nieuw gesprek" sits with the input, right of the AI notice, because it acts on the conversation; it only appears once there is a conversation. Clicking it clears the conversation and scrolls to the end of the page, just like sending.</li>
+      <li>The input is never pinned: at every width it sits in the normal page flow, right after the last message, with the footer below it. When the conversation is too short to fill the screen, the chat area stretches (the page, footer included, is at least one screen tall), so the input and footer rest at the bottom of the screen instead of halfway up. The header scrolls away as the conversation grows. On mobile the suggestions stack into one column and the switches move above the name.</li>
+      <li>Footer: overeem.io's taupe contact block returns as the footer, with the email address and LinkedIn, at the end of the page in every state. Dark text on the taupe is 6.35:1 (white would be 2.30:1), and like the yellow header it keeps its colours in dark mode. The error and rate-limit messages point to it ("via e-mail of LinkedIn onderaan de pagina"), so a visitor never leaves with nothing.</li>
+      <li>Auto-scroll ("stick to bottom"): sending, and "Nieuw gesprek", scroll the page to its end, so the input sits just above the footer at the bottom of the screen. Any scroll you make yourself (wheel or trackpad up, touch, Page Up / arrow up / Home outside the input, dragging the scrollbar) turns following off at once, so the stream never fights you. Scrolling back to the very bottom turns it on again. Switching language or theme never scrolls.</li>
+    </ul>
+  </div>
+</section>
+
+<script>
+(() => {
+  const thread = document.getElementById('thread');
+  const form = document.getElementById('composer');
+  const input = document.getElementById('composer-input');
+  const send = document.getElementById('send');
+  const count = document.getElementById('count');
+  const btnNew = document.getElementById('btn-new');
+  const states = document.getElementById('states');
+  const langs = document.getElementById('langs');
+  const themes = document.getElementById('themes');
+  const root = document.documentElement;
+  const LIMIT = 1000;
+
+  const protoBar = document.querySelector('.proto-bar');
+  new ResizeObserver(() => root.style.setProperty('--proto-bar-h', protoBar.offsetHeight + 'px')).observe(protoBar);
+
+  const T = {
+    nl: {
+      subtitle: 'Stel je vragen over het cv van Gerwin',
+      photoAlt: 'Gerwin met zijn laptop op een dak, uitkijkend over de stad',
+      langGroup: 'Taal', themeGroup: 'Weergave',
+      themeSystem: 'Automatisch', themeLight: 'Licht', themeDark: 'Donker',
+      threadLabel: 'Gesprek', inputLabel: 'Je vraag', send: 'Versturen',
+      placeholder: 'Stel een vraag over Gerwin…',
+      who: 'AI-assistent',
+      intro: 'Hoi! Ik beantwoord vragen over Gerwin: zijn ervaring, hoe hij werkt en wat hij zoekt. Ik gebruik alleen zijn cv en wat hij zelf over zijn werk heeft geschreven; staat iets daar niet in, dan zeg ik dat.',
+      suggestLabel: 'Probeer bijvoorbeeld',
+      suggestions: ['Hoeveel jaar ervaring heeft Gerwin met TypeScript?', 'Wat is zijn laatste project?', 'Ik wil graag kennismaken', 'Hoe heeft Gerwin deze chat gebouwd?'],
+      privacyLine: 'Je chat met een AI; antwoorden kunnen fouten bevatten.',
+      privacyLink: 'Privacy',
+      newChat: 'Nieuw gesprek',
+      thinking: 'Aan het nadenken',
+      cutoff: 'Dit antwoord is afgebroken omdat het te lang werd.',
+      meetingSent: 'Kennismakingsverzoek verstuurd',
+      error: 'Het antwoord kwam niet door. Probeer het opnieuw, of neem direct contact op via e-mail of LinkedIn onderaan de pagina.',
+      retry: 'Opnieuw proberen',
+      rateLimit: 'Even rustig aan, probeer het over een paar minuten opnieuw. Of neem direct contact op via e-mail of LinkedIn onderaan de pagina.',
+      contactLabel: 'Contact',
+      close: 'Sluiten',
+      privacyWho: 'Deze chat is van Gerwin Overeem. Je bereikt hem via [e-mailadres uit het cv].',
+      privacyConvTitle: 'Wat er met je gesprek gebeurt',
+      privacyMeetTitle: 'Kennismakingsverzoeken',
+      privacyMeet: 'Vraag je via de chat een kennismaking aan, dan krijgt Gerwin je naam, e-mailadres, organisatie en bericht per e-mail. Hij gebruikt ze alleen om contact met je op te nemen.',
+      privacyCookiesTitle: 'Cookies',
+      privacyCookies: 'Deze site gebruikt geen cookies. In je browser bewaart hij alleen je keuze voor taal en weergave (in localStorage).',
+      privacyRightsTitle: 'Grondslag en je rechten',
+      privacyRights: 'Gesprekken worden bewaard op basis van gerechtvaardigd belang: Gerwin leest ze om de chat te verbeteren. Je kunt per e-mail vragen welke gegevens er over jou zijn, bezwaar maken of om verwijdering vragen. Noem dan het gesprek-ID hieronder, dan vindt Gerwin je gesprek terug.',
+      convIdLabel: 'Gesprek-ID:', copy: 'Kopiëren', copied: 'Gekopieerd',
+      thService: 'Dienst', thWhat: 'Wat', thHowLong: 'Hoe lang',
+      privacyRows: [
+        ['Gesprekslog (EU)', 'volledige gesprekken, zonder IP-adres', '30 dagen'],
+        ['Vercel AI Gateway', 'de inhoud van het gesprek, onderweg naar het model', 'verwijderd zodra het verzoek klaar is; de logs bewaren alleen technische gegevens (model, kosten, duur, status)'],
+        ['Anthropic (Claude)', 'de inhoud van het gesprek', 'binnen 30 dagen verwijderd; tot 2 jaar als het veiligheidssysteem van Anthropic een gesprek markeert. Niet gebruikt voor training'],
+        ['Resend', 'kennismakingsverzoeken (naam, e-mailadres, organisatie, bericht)', '30 dagen'],
+        ['Inbox van Gerwin', 'kennismakingsverzoeken', 'tot hij ze verwijdert'],
+        ['Vercel', 'technische gegevens (pagina, status, IP-adres) en paginabezoeken', 'logs 1 uur; bezoekstatistieken 1 maand'],
+      ],
+    },
+    en: {
+      subtitle: "Ask your questions about Gerwin's CV",
+      photoAlt: 'Gerwin with his laptop on a rooftop, looking out over the city',
+      langGroup: 'Language', themeGroup: 'Theme',
+      themeSystem: 'Auto', themeLight: 'Light', themeDark: 'Dark',
+      threadLabel: 'Conversation', inputLabel: 'Your question', send: 'Send',
+      placeholder: 'Ask a question about Gerwin…',
+      who: 'AI assistant',
+      intro: "Hi! I answer questions about Gerwin: his experience, how he works and what he's looking for. I only use his CV and what he has written about his own work; if something isn't in there, I'll say so.",
+      suggestLabel: 'For example',
+      suggestions: ['How many years of TypeScript experience does Gerwin have?', "What's his latest project?", "I'd like to set up an intro meeting", 'How did Gerwin build this chat?'],
+      privacyLine: "You're chatting with an AI; answers may contain mistakes.",
+      privacyLink: 'Privacy',
+      newChat: 'New conversation',
+      thinking: 'Thinking',
+      cutoff: 'This answer was cut off because it got too long.',
+      meetingSent: 'Intro request sent',
+      error: "The answer didn't come through. Try again, or get in touch directly by email or LinkedIn at the bottom of the page.",
+      retry: 'Try again',
+      rateLimit: 'Slow down a little, please try again in a few minutes. Or get in touch directly by email or LinkedIn at the bottom of the page.',
+      contactLabel: 'Contact',
+      close: 'Close',
+      privacyWho: 'This chat is run by Gerwin Overeem. You can reach him at [email address from the CV].',
+      privacyConvTitle: 'What happens to your conversation',
+      privacyMeetTitle: 'Intro requests',
+      privacyMeet: 'If you request an intro meeting through the chat, Gerwin receives your name, email address, organization and message by email. He uses them only to get in touch with you.',
+      privacyCookiesTitle: 'Cookies',
+      privacyCookies: 'This site uses no cookies. In your browser it only keeps your language and theme choice (in localStorage).',
+      privacyRightsTitle: 'Legal basis and your rights',
+      privacyRights: 'Conversations are kept on the basis of legitimate interest: Gerwin reads them to improve the chat. You can ask by email which data there is about you, object, or ask for deletion. Mention the conversation ID below, so Gerwin can find your conversation.',
+      convIdLabel: 'Conversation ID:', copy: 'Copy', copied: 'Copied',
+      thService: 'Service', thWhat: 'What', thHowLong: 'How long',
+      privacyRows: [
+        ['Conversation log (EU)', 'full conversations, without IP address', '30 days'],
+        ['Vercel AI Gateway', 'conversation content, in transit to the model', 'deleted once the request completes; its logs keep only technical data (model, cost, duration, status)'],
+        ['Anthropic (Claude)', 'conversation content', "deleted within 30 days; up to 2 years if Anthropic's safety systems flag a conversation. Not used for training"],
+        ['Resend', 'intro requests (name, email address, organization, message)', '30 days'],
+        ["Gerwin's inbox", 'intro requests', 'until he deletes them'],
+        ['Vercel', 'technical data (page, status, IP address) and page views', 'logs 1 hour; visitor statistics 1 month'],
+      ],
+    },
+  };
+
+  const A = {
+    nl: {
+      chat: 'Met Nuxt op Vercel. Het model, Claude Haiku van Anthropic, draait via Vercel AI Gateway en krijgt zijn cv en een tekst die hij zelf over zijn werk schreef direct mee. Een zoeksysteem of database is niet nodig, want dat past allemaal ruim in de context.\n\nEr is één tool: een kennismakingsverzoek dat Gerwin per e-mail krijgt, pas nadat jij de samenvatting hebt bevestigd.',
+      built: 'Twee dingen die hij zelf noemt. Een adversarial review gate: voordat een AI-assistent een codewijziging als klaar mag opleveren, beoordeelt een aparte reviewer die wijziging en blokkeert bij problemen die echt opgelost moeten worden.\n\nEn deze chat, zonder database en met zijn cv direct in de context in plaats van een zoeksysteem.\n\nWil je weten hoe de review gate precies werkt?',
+      gate: 'Als een AI-assistent klaar denkt te zijn, draait er eerst een aparte review over de wijzigingen die nog niet gecommit zijn. Vindt die iets dat echt moet worden opgelost, dan kan de assistent niet afronden.\n\nElke bevinding wordt opgelost, of bewust overgeslagen met een controleerbare reden. Die keuzes worden bijgehouden, zodat Gerwin achteraf kan nalopen wat er is overgeslagen en waarom.',
+      python: 'Nee, geen productie-ervaring met Python. Zijn stack is TypeScript en Node. Gerwin noemt dit zelf als een van zijn beperkingen.',
+      ts: 'Volgens zijn cv werkt Gerwin sinds [jaar] met TypeScript, dus ongeveer [n] jaar.',
+      latest: 'Zijn meest recente opdracht in zijn cv is [rol] bij [klant], sinds [maand jaar]. [Korte omschrijving uit het cv.]',
+      meet: 'Ik kan een kennismakingsverzoek naar Gerwin sturen. Daarvoor heb ik nodig:\n\n– je naam\n– je e-mailadres\n– een korte toelichting (en eventueel je organisatie)\n\nVoordat ik iets verstuur, laat ik je eerst een samenvatting zien.',
+      salary: 'Daar antwoordt Gerwin liever zelf op, dus daar doe ik geen uitspraken over. Zal ik een kennismakingsverzoek voor je klaarzetten?',
+      ai: 'Nee, ik ben een AI-assistent die Gerwin heeft gebouwd om vragen over hem te beantwoorden. Gerwin zelf spreek je via een kennismaking.',
+      unknown: 'Dat staat niet in zijn cv of in wat hij zelf over zijn werk heeft geschreven, dus daar kan ik geen betrouwbaar antwoord op geven. Je kunt het Gerwin zelf vragen: zal ik een kennismaking voor je aanvragen?',
+      meetDetails: 'Sanne de Vries, sanne@voorbeeld.nl, van Voorbeeld BV. We zoeken iemand voor ons AI-team en ik wil graag een keer bellen.',
+      meetSummary: 'Dit stuur ik naar Gerwin:\n\nNaam: Sanne de Vries\nE-mail: sanne@voorbeeld.nl\nOrganisatie: Voorbeeld BV\nBericht: We zoeken iemand voor ons AI-team en ik wil graag een keer bellen.\n\nKlopt dit? Dan verstuur ik het.',
+      meetYes: 'Ja, verstuur maar.',
+      meetDone: 'Verstuurd. Gerwin neemt contact met je op via sanne@voorbeeld.nl.',
+      qGate: 'Hoe werkt zijn review gate?',
+      qBuilt: 'Wat heeft Gerwin met AI gebouwd?',
+      qGateFollow: 'En hoe werkt die review gate?',
+      qPython: 'Heeft hij ervaring met Python?',
+    },
+    en: {
+      chat: "With Nuxt on Vercel. The model, Anthropic's Claude Haiku, runs through Vercel AI Gateway and gets his CV and a text he wrote about his own work directly in its context. There's no search system or database, because it all fits comfortably.\n\nThere's one tool: an intro request that Gerwin receives by email, only after you've confirmed the summary.",
+      built: "Two things he mentions himself. An adversarial review gate: before an AI assistant may hand in a code change as done, a separate reviewer checks the change and blocks it on problems that really need fixing.\n\nAnd this chat, with no database and his CV directly in the context instead of a search system.\n\nWould you like to know how the review gate works?",
+      gate: "When an AI assistant thinks it's done, a separate review first runs over the uncommitted changes. If it finds something that really needs fixing, the assistant can't finish.\n\nEvery finding is either fixed or deliberately skipped with a checkable reason. Those choices are logged, so Gerwin can check afterwards what was skipped and why.",
+      python: 'No, no production experience with Python. His stack is TypeScript and Node. Gerwin lists this himself as one of his limitations.',
+      ts: "According to his CV, Gerwin has worked with TypeScript since [year], so about [n] years.",
+      latest: 'The most recent assignment in his CV is [role] at [client], since [month year]. [Short description from the CV.]',
+      meet: "I can send Gerwin an intro request. For that I need:\n\n– your name\n– your email address\n– a short message (and your organization, if you like)\n\nBefore I send anything, I'll show you a summary.",
+      salary: "Gerwin prefers to answer that himself, so I won't comment on it. Shall I prepare an intro request for you?",
+      ai: "No, I'm an AI assistant Gerwin built to answer questions about him. You can talk to Gerwin himself through an intro meeting.",
+      unknown: "That isn't in his CV or in what he has written about his own work, so I can't give you a reliable answer. You could ask Gerwin himself: shall I request an intro meeting for you?",
+      meetDetails: "Sam Jones, sam@example.com, from Example Ltd. We're looking for someone for our AI team and I'd like to have a call.",
+      meetSummary: "This is what I'll send Gerwin:\n\nName: Sam Jones\nEmail: sam@example.com\nOrganization: Example Ltd\nMessage: We're looking for someone for our AI team and I'd like to have a call.\n\nIs this correct? Then I'll send it.",
+      meetYes: 'Yes, go ahead.',
+      meetDone: 'Sent. Gerwin will get back to you at sam@example.com.',
+      qGate: 'How does his review gate work?',
+      qBuilt: 'What has Gerwin built with AI?',
+      qGateFollow: 'And how does that review gate work?',
+      qPython: 'Does he have experience with Python?',
+    },
+  };
+
+  function topicFor(q) {
+    const s = q.toLowerCase();
+    if (/ben je|are you/.test(s)) return 'ai';
+    if (/python/.test(s)) return 'python';
+    if (/chat/.test(s)) return 'chat';
+    if (/gate|review/.test(s)) return 'gate';
+    if (/typescript|jaar ervaring|years/.test(s)) return 'ts';
+    if (/laatste|latest|recent/.test(s)) return 'latest';
+    if (/kennis|afspraak|meeting|contact|gesprek|intro|call/.test(s)) return 'meet';
+    if (/salaris|salary|beginnen|start/.test(s)) return 'salary';
+    if (/gebouwd|built|project|\bai\b/.test(s)) return 'built';
+    return 'unknown';
+  }
+
+  let lang = 'nl';
+  let items = [];
+  let busy = false;
+  let timer = null;
+  let current = 'conversation';
+
+  const t = key => T[lang][key];
+
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  const ICON = {
+    ok: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    err: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>',
+    warn: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  };
+
+  function applyLang() {
+    root.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(n => { n.textContent = t(n.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-attr]').forEach(n => {
+      n.dataset.i18nAttr.split(',').forEach(pair => {
+        const [attr, key] = pair.split(':');
+        n.setAttribute(attr, t(key));
+      });
+    });
+    const rows = document.getElementById('privacy-rows');
+    rows.replaceChildren(...t('privacyRows').map(cells => {
+      const tr = el('tr');
+      cells.forEach(c => tr.append(el('td', null, c)));
+      return tr;
+    }));
+    check(langs, b => b.dataset.lang === lang);
+    render();
+  }
+
+  // Stick to bottom: sending turns following on; any scroll the visitor makes turns it off at once, and only
+  // returning to the very bottom turns it back on. Input events fire before the scroll, so a streamed chunk
+  // can't win the race; the page's own scrolls always land at the bottom, so they never turn it off.
+  const pageEnd = document.querySelector('.site-footer');
+  const BOTTOM_SLACK = 8;
+  let jumpToInput = false;
+  let stuck = false;
+  const atBottom = () => Math.abs(pageEnd.getBoundingClientRect().bottom - window.innerHeight) <= BOTTOM_SLACK;
+  const release = () => { stuck = false; };
+  const isField = t => t instanceof HTMLElement && (t.matches('input, textarea, select') || t.isContentEditable);
+  window.addEventListener('wheel', e => { if (e.deltaY < 0) release(); }, { passive: true });
+  window.addEventListener('touchmove', release, { passive: true });
+  window.addEventListener('keydown', e => {
+    if (['ArrowUp', 'PageUp', 'Home'].includes(e.key) && !isField(e.target)) release();
+  });
+  // Growing text never moves the page up, so upward movement is always the visitor (e.g. dragging the scrollbar).
+  let lastY = window.scrollY;
+  window.addEventListener('scroll', () => {
+    if (window.scrollY < lastY - 1) release();
+    else if (atBottom()) stuck = true;
+    lastY = window.scrollY;
+  }, { passive: true });
+
+  function render({ stream = false } = {}) {
+    const stick = jumpToInput || (stream && stuck);
+    if (jumpToInput) stuck = true;
+    jumpToInput = false;
+    thread.replaceChildren();
+    btnNew.hidden = items.length === 0;
+
+    if (items.length === 0) {
+      const intro = el('div', 'intro');
+      intro.append(el('span', 'who', t('who')));
+      intro.append(el('p', null, t('intro')));
+      intro.append(el('p', 'suggest-label', t('suggestLabel')));
+      const grid = el('div', 'suggestions');
+      t('suggestions').forEach(q => {
+        const b = el('button', null, q);
+        b.type = 'button';
+        b.addEventListener('click', () => ask(q));
+        grid.append(b);
+      });
+      intro.append(grid);
+      thread.append(intro);
+    }
+
+    let lastRole = null;
+    items.forEach(it => {
+      if (it.role === 'user') {
+        thread.append(el('div', 'msg user', it.text));
+      } else if (it.role === 'assistant') {
+        const m = el('div', 'msg assistant');
+        m.lang = it.lang;
+        if (lastRole !== 'assistant') m.append(el('span', 'who', t('who')));
+        if (it.pending) {
+          const d = el('span', 'dots');
+          d.setAttribute('aria-label', t('thinking'));
+          d.append(el('span'), el('span'), el('span'));
+          m.append(d);
+        } else {
+          const body = el('div', null, it.text);
+          if (it.streaming) body.append(el('span', 'caret'));
+          m.append(body);
+          if (it.cutoff) m.append(el('span', 'cutoff', t('cutoff')));
+        }
+        thread.append(m);
+      } else if (it.role === 'notice') {
+        const n = el('div', 'notice ' + it.kind);
+        n.setAttribute('role', it.kind === 'err' ? 'alert' : 'status');
+        n.insertAdjacentHTML('afterbegin', ICON[it.kind]);
+        n.append(el('span', null, t(it.key)));
+        if (it.retry) {
+          const b = el('button', null, t('retry'));
+          b.type = 'button';
+          b.addEventListener('click', () => {
+            items = items.filter(x => x !== it);
+            jumpToInput = true;
+            respond(it.retry, true);
+          });
+          n.append(b);
+        }
+        thread.append(n);
+      }
+      lastRole = it.role === 'notice' ? lastRole : it.role;
+    });
+
+    send.disabled = busy;
+    btnNew.disabled = busy;
+    if (stick) pageEnd.scrollIntoView({ block: 'end' });
+  }
+
+  function respond(q, follow = false) {
+    busy = true;
+    const msg = { role: 'assistant', lang, pending: true, text: '' };
+    items.push(msg);
+    render({ stream: follow });
+    const tokens = A[lang][topicFor(q)].match(/\S+\s*|\s+/g) || [];
+    let i = 0;
+    clearInterval(timer);
+    setTimeout(() => {
+      msg.pending = false;
+      msg.streaming = true;
+      timer = setInterval(() => {
+        msg.text += tokens.slice(i, i + 2).join('');
+        i += 2;
+        if (i >= tokens.length) {
+          clearInterval(timer);
+          msg.streaming = false;
+          busy = false;
+        }
+        render({ stream: follow });
+      }, 45);
+    }, 700);
+  }
+
+  function ask(q) {
+    if (busy) return;
+    q = q.trim();
+    if (!q || q.length > LIMIT) return;
+    jumpToInput = true;
+    items.push({ role: 'user', text: q });
+    input.value = '';
+    sizeInput();
+    respond(q, true);
+  }
+
+  function sizeInput() {
+    input.style.height = 'auto';
+    input.style.height = input.scrollHeight + 'px';
+    const n = input.value.length;
+    count.hidden = n < 900;
+    count.textContent = n + ' / ' + LIMIT;
+    count.classList.toggle('over', n > LIMIT);
+  }
+
+  form.addEventListener('submit', e => { e.preventDefault(); ask(input.value); });
+  input.addEventListener('input', sizeInput);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); }
+  });
+  const newChatId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)).replace(/-/g, '').slice(0, 12);
+  let chatId = newChatId();
+  const convIdEl = document.getElementById('conv-id');
+  const copyBtn = document.getElementById('copy-conv-id');
+  const showChatId = () => { convIdEl.textContent = chatId; };
+  showChatId();
+  copyBtn.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(chatId); } catch {}
+    copyBtn.textContent = t('copied');
+    setTimeout(() => { copyBtn.textContent = t('copy'); }, 1600);
+  });
+
+  btnNew.addEventListener('click', () => {
+    if (busy) return;
+    items = [];
+    chatId = newChatId();
+    showChatId();
+    setPressed('empty');
+    jumpToInput = true;
+    render();
+    input.focus({ preventScroll: true });
+  });
+
+  const dlg = document.getElementById('privacy');
+  document.getElementById('open-privacy').addEventListener('click', () => dlg.showModal());
+  document.getElementById('close-privacy').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+
+  const PRESETS = {
+    empty: () => [],
+    conversation: a => [
+      { role: 'user', text: T[lang].suggestions[3] },
+      { role: 'assistant', lang, text: a.chat },
+      { role: 'user', text: a.qPython },
+      { role: 'assistant', lang, text: a.python },
+    ],
+    meeting: a => [
+      { role: 'user', text: T[lang].suggestions[2] },
+      { role: 'assistant', lang, text: a.meet },
+      { role: 'user', text: a.meetDetails },
+      { role: 'assistant', lang, text: a.meetSummary },
+      { role: 'user', text: a.meetYes },
+      { role: 'notice', kind: 'ok', key: 'meetingSent' },
+      { role: 'assistant', lang, text: a.meetDone },
+    ],
+    error: a => [
+      { role: 'user', text: a.qGate },
+      { role: 'notice', kind: 'err', key: 'error', retry: a.qGate },
+    ],
+    ratelimit: a => [
+      { role: 'user', text: a.qBuilt },
+      { role: 'assistant', lang, text: a.built },
+      { role: 'user', text: a.qGateFollow },
+      { role: 'notice', kind: 'warn', key: 'rateLimit' },
+    ],
+  };
+
+  function setPressed(state) {
+    current = state;
+    states.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.state === state)));
+  }
+
+  function show(state) {
+    clearInterval(timer);
+    busy = false;
+    setPressed(state);
+    if (state === 'streaming') {
+      items = [{ role: 'user', text: A[lang].qGate }];
+      respond(A[lang].qGate);
+      return;
+    }
+    items = PRESETS[state](A[lang]);
+    render();
+  }
+
+  states.addEventListener('click', e => {
+    const b = e.target.closest('button[data-state]');
+    if (b) show(b.dataset.state);
+  });
+
+  // Radio groups: the checked option is the single tab stop, arrow keys move and select.
+  function check(group, isChecked) {
+    group.querySelectorAll('[role="radio"]').forEach(b => {
+      const on = isChecked(b);
+      b.setAttribute('aria-checked', String(on));
+      b.tabIndex = on ? 0 : -1;
+    });
+  }
+  function radioGroup(group, select) {
+    group.addEventListener('click', e => {
+      const b = e.target.closest('[role="radio"]');
+      if (b) select(b);
+    });
+    group.addEventListener('keydown', e => {
+      const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+      if (!step) return;
+      e.preventDefault();
+      const opts = [...group.querySelectorAll('[role="radio"]')];
+      const next = opts[(opts.indexOf(document.activeElement) + step + opts.length) % opts.length];
+      select(next);
+      next.focus();
+    });
+  }
+
+  const store = {
+    get(key) { try { return localStorage.getItem(key); } catch { return null; } },
+    set(key, value) { try { localStorage.setItem(key, value); } catch {} },
+  };
+
+  radioGroup(langs, b => {
+    if (b.dataset.lang === lang) return;
+    lang = b.dataset.lang;
+    store.set('lang', lang);
+    applyLang();
+  });
+
+  const hostTheme = root.getAttribute('data-theme');
+  function applyTheme(choice) {
+    if (choice === 'system') {
+      if (hostTheme) root.setAttribute('data-theme', hostTheme);
+      else root.removeAttribute('data-theme');
+    } else {
+      root.setAttribute('data-theme', choice);
+    }
+    check(themes, b => b.dataset.themeChoice === choice);
+  }
+  radioGroup(themes, b => {
+    applyTheme(b.dataset.themeChoice);
+    store.set('theme', b.dataset.themeChoice);
+  });
+
+  const savedTheme = store.get('theme');
+  applyTheme(['light', 'dark', 'system'].includes(savedTheme) ? savedTheme : 'system');
+
+  const savedLang = store.get('lang');
+  const browserLang = (navigator.languages || [navigator.language || ''])
+    .map(l => l.slice(0, 2).toLowerCase())
+    .find(l => l === 'nl' || l === 'en');
+  lang = ['nl', 'en'].includes(savedLang) ? savedLang : browserLang || 'en';
+
+  items = PRESETS.conversation(A[lang]);
+  applyLang();
+})();
+</script>
+
+</body></html>
