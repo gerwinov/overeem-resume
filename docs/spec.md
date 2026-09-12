@@ -80,8 +80,12 @@ The AI SDK runs the loop: one `streamText` call with `request_meeting` defined w
 ```
 app/
   assets/css/main.css      # Tailwind import, dark variant, theme colors
-  pages/index.vue          # chat window + example questions + privacy note
-  composables/useCvChat.ts # the @ai-sdk/vue Chat instance, its transport and the rendering helpers
+  pages/index.vue          # the page: header, conversation, input, footer
+  components/              # SiteHeader, ChatThread, ChatComposer, ChatNotice, SiteFooter and small parts; icons/ from the design
+  composables/useCvChat.ts # useChat from @ai-sdk/vue, its transport (locale, 429), send, retry, new conversation
+  composables/useStickToBottom.ts # auto-scroll while an answer streams
+  utils/chat-view.ts       # the rendering rules: what the conversation shows, from the messages (unit-tested)
+shared/utils/chat.ts       # the /api/chat contract used by page and server: limits, locales, message type, the meeting state
 i18n/locales/
   nl.json                  # all UI copy in Dutch
   en.json                  # all UI copy in English
@@ -92,7 +96,7 @@ server/
     about.md               # what is NOT in the CV, in Gerwin's own words (see below)
   utils/chat.ts            # handleChat: validation, prompt, streamText with the tool, the UI message stream
   utils/chat-request.ts    # body validation (the limits in "Safety & cost")
-  utils/history.ts         # history cleaning and the meeting state
+  utils/history.ts         # history cleaning
   utils/body.ts            # reading a body up to a byte limit
   utils/prompt.ts          # builds the system prompt from instructions + content
   utils/meeting.ts         # the request_meeting tool: validation, send state, sending via Resend
@@ -239,14 +243,14 @@ All UI copy lives in `i18n/locales/nl.json` and `en.json`; the Dutch strings bel
 ### Layout and copy
 
 - Header with name, one line of explanation ("Stel je vragen over het cv van Gerwin"), the language switch and the theme switch
-- Chat window with streaming answers, based on the `Chat` status from `@ai-sdk/vue`; clear loading, empty and error states. Every ending (finish, error, 429, dropped connection) leaves the loading state.
+- Chat window with streaming answers, based on the `useChat` status from `@ai-sdk/vue`; clear loading, empty and error states. Every ending (finish, error, 429, dropped connection) leaves the loading state.
 - The input field sits in the normal page flow, directly after the last message, at every width: never pinned to the bottom of the screen. There is some space below it, so the page scrolls a little past the input. When the conversation is too short to fill the screen, the chat area stretches (the page is at least one screen tall, `min-height: 100dvh`), so the input and the footer below it rest at the bottom of the screen rather than halfway up.
 - **Input behaviour:** the input is a textarea that grows with its content up to about six lines, then scrolls. On a physical keyboard Enter sends and Shift+Enter adds a line break; on touch keyboards Enter adds a line break and the send button sends. The visitor can type while an answer streams, but sending waits until it has finished. A counter appears from 900 characters, and sending is blocked above 1000, matching the server limit. At the 30-message cap, the input is replaced by a short message and the "New conversation" button.
 - A "Nieuw gesprek" / "New conversation" button next to the line below the input appears once there is a conversation. Like sending, it is disabled while an answer streams, so a request in flight (and a meeting request it may already have sent) always stays with the conversation and chat ID it belongs to. It clears the conversation (the messages, and with them the meeting state), starts a new random chat ID so the log shows it as a new thread, shows the empty state again, and scrolls to the end of the page, as sending does.
-- Auto-scroll while an answer streams ("stick to bottom"): sending turns following on and scrolls to the end of the page, so the input sits just above the footer at the bottom of the screen. Any scroll the visitor makes turns it off immediately: an upward wheel or trackpad movement, a touch drag, Page Up / Arrow Up / Home outside a text field, or any upward change of the scroll position (such as dragging the scrollbar), since streamed text only ever grows downward. Following turns on again only when the visitor is back at the very bottom (within a few pixels). The page's own scrolls always land at the bottom, so they never turn it off. Nothing else scrolls the page: switching language or theme keeps the scroll position.
+- Auto-scroll while an answer streams ("stick to bottom"): sending turns following on and scrolls to the end of the page, so the input sits just above the footer at the bottom of the screen. Any scroll the visitor makes toward earlier messages turns it off immediately: an upward wheel or trackpad movement, a touch drag that pulls the page down, Page Up / Arrow Up / Home outside a text field, or any upward change of the scroll position (such as dragging the scrollbar), since streamed text only ever grows downward. Following turns on again only when the visitor scrolls down at the very bottom (within a few pixels): arriving there, or a downward wheel, swipe or key once there. The page's own scrolls always land at the bottom, so they never turn it off. Nothing else scrolls the page: switching language or theme keeps the scroll position.
 - **Rendering an assistant message:** its parts are grouped into steps by their `step-start` parts. Text in a step that also contains a `tool-request_meeting` part, in any state (including `output-error` for an invalid call, or no output for a cut-off one), is not shown, whatever the order within the step: it was written before any tool result existed, and after a failed call it could claim a send that never happened. Text from the following step, the answer to the tool result, is shown.
 - A `tool-request_meeting` part with output `{ ok: true }` shows a fixed confirmation line ("Kennismakingsverzoek verstuurd"). It does not depend on the model's text, so a successful send is never shown as a failed turn.
-- **Failed turns** (a stream error; a finish reason of `tool-calls` in a turn without a successful send; or any other finish reason than `stop`, `length` or `tool-calls`) show an error message with a retry button, which regenerates the answer. A failed assistant message is left out of the history of the next request, unless it contains a successful send: such a message is never removed or regenerated, it keeps its confirmation line, and the visitor simply continues the conversation.
+- **Failed turns** (a stream error; a finish reason of `tool-calls` in a turn without a successful send; any other finish reason than `stop`, `length` or `tool-calls`; or a finished answer with nothing to show, such as one cut off inside a tool call) show an error message with a retry button, which regenerates the answer. A failed assistant message is left out of the history of the next request, unless it contains a successful send: such a message is never removed or regenerated, it keeps its confirmation line, and the visitor simply continues the conversation.
 - Example questions as buttons, e.g.:
   - "Hoeveel jaar ervaring heeft Gerwin met TypeScript?"
   - "Wat is zijn laatste project?"
@@ -254,7 +258,7 @@ All UI copy lives in `i18n/locales/nl.json` and `en.json`; the Dutch strings bel
   - "Hoe heeft Gerwin deze chat gebouwd?"
 - One short line below the input field: "Je chat met een AI; antwoorden kunnen fouten bevatten. Privacy" ("You're chatting with an AI; answers may contain mistakes. Privacy"). "Privacy" is a link that opens the privacy note (see "Privacy"). Saying that it is an AI also covers the EU AI Act's duty to tell people they are talking to an AI system (Article 50, which applies from 2 August 2026).
 - Answers are rendered as text (Vue text interpolation, never `v-html`), so model output can never inject markup.
-- **Footer:** Gerwin's LinkedIn and email address, always present at the end of the page, below the input, in every state (not pinned, like the input). It is overeem.io's taupe contact block: `#b6a999` with dark text and icons (6.35:1), in both themes. They come from public runtime config (`NUXT_PUBLIC_CONTACT_EMAIL`, `NUXT_PUBLIC_LINKEDIN_URL`), because the CV itself never reaches the client.
+- **Footer:** Gerwin's LinkedIn and email address, always present at the end of the page, below the input, in every state (not pinned, like the input). It is overeem.io's taupe contact block: `#b6a999` with dark text and icons (6.35:1), in both themes. The same taupe is the page's canvas colour (on `html`, while `body` carries the page background), so overscrolling past the top or bottom shows taupe instead of a blank area. The contact details come from public runtime config (`NUXT_PUBLIC_CONTACT_EMAIL`, `NUXT_PUBLIC_LINKEDIN_URL`), because the CV itself never reaches the client.
 - **When the chat cannot answer** (rate limit, a failed turn, the credit balance used up, the model or gateway down), the message says so plainly and points to the footer's LinkedIn and email, so a visitor never leaves with nothing. A failed turn still offers its retry button.
 - **Accessibility:** usable on mobile and with the keyboard, with labels and AA contrast (see "Theme"). The message list itself is not a live region, because streamed text would be read out word by word. A separate visually hidden `aria-live="polite"` region announces each answer once it is complete, as well as the confirmation line, error and rate-limit messages. While an answer streams, the chat area has `aria-busy="true"`. Focus stays in the input after sending.
 
@@ -415,6 +419,7 @@ LANGSMITH_PROJECT=cv-chat
 - [ ] "New conversation" disabled while an answer streams; after it, the next request carries a new chat ID?
 - [ ] Finish reason `tool-calls` after a successful send (simulated) → confirmation line, no error message and no retry button?
 - [ ] Finish reason `tool-calls` after a failed or cut-off call (simulated) → failed turn with retry, never an empty turn?
+- [ ] Finish reason `length` inside a tool call, with nothing to show (simulated) → failed turn with retry, never an empty turn?
 - [ ] Finish reason `content-filter`, `error`, `other` or an unrecognized value (simulated) → failed turn with retry, answer left out of the next request's history?
 - [ ] Two parallel `request_meeting` calls in one turn, one `{ ok: true }` and one `send_in_progress` → the model says the request was sent, once, without apologizing?
 - [ ] Send succeeds in the second step → the third step answers in text, confirmation line visible?

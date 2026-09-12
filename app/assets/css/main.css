@@ -6,4 +6,68 @@
 @theme {
   --font-display: "Oxygen", "Segoe UI", system-ui, sans-serif;
   --font-sans: "Source Sans 3", "Source Sans Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --breakpoint-sm: 36rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 62rem;
+  --breakpoint-xl: 75rem;
+
+  --color-brand: #F7B943;
+  --color-brand-press: #EAA52A;
+  --color-on-brand: #ffffff;
+  --color-taupe: #b6a999;
+  --color-on-taupe: #1f2a33;
+  --color-bubble: #b6a999;
+  --color-on-bubble: #1f2a33;
+  --color-ink: #22303a;
+  --color-ink-soft: #5d6770;
+  --color-paper: #faf8f5;
+  --color-surface: #ffffff;
+  --color-line: #e3ddd4;
+  --color-chip: #efeae3;
+  --color-ok: #2d7a4c;
+  --color-ok-soft: #e6f2ea;
+  --color-err: #b3261e;
+  --color-err-soft: #fbebe9;
+  --color-warn-soft: #fdf1d9;
+  --color-focus: #22303a;
+}
+
+/* The content column: at least 16px at the sides, 760px wide at most. */
+@utility px-gutter {
+  padding-inline: max(16px, calc((100% - 760px) / 2));
+}
+
+@layer base {
+  html {
+    @apply bg-taupe;
+  }
+
+  body {
+    @apply bg-paper font-sans text-ink antialiased;
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}
+
+@keyframes caret-blink {
+  50% { opacity: 0; }
+}
+
+@keyframes dot-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: .5; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+@utility animate-caret {
+  animation: caret-blink 1s steps(1) infinite;
+}
+
+@utility animate-dot {
+  animation: dot-bounce 1.2s infinite ease-in-out;
 }

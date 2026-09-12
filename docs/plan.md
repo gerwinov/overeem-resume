@@ -62,7 +62,7 @@ Sources for every step:
 
 ### 7. Chat UI
 - The page as in `docs/design/index.html`: banner header, conversation, input, footer; all states of the prototype (start, conversation, streaming, meeting sent, error, rate limited, cut off).
-- `app/composables/useCvChat.ts` with the `@ai-sdk/vue` `Chat`, the transport (`locale`, 429 mapping), the rendering rules (text in tool steps hidden, confirmation line, failed turns), input behaviour, auto-scroll and "New conversation".
+- `app/composables/useCvChat.ts` with `useChat` from `@ai-sdk/vue`, the transport (`locale`, 429 mapping), the rendering rules (text in tool steps hidden, confirmation line, failed turns), input behaviour, auto-scroll and "New conversation".
 - **Gerwin validates:** side by side with the prototype on desktop and phone; runs through every state against the real API; the "Tool" UI items of the test plan.
 
 ### 8. Languages and theme

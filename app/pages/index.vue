@@ -1,10 +1,43 @@
 <script setup lang="ts">
-const { t } = useI18n()
+const { thread, busy, full, messages, send, retry, newConversation } = useCvChat()
+
+const pageEnd = ref<HTMLElement | null>(null)
+const composer = ref<{ focus: () => void } | null>(null)
+const { jumpToEnd, follow } = useStickToBottom(pageEnd)
+
+watch(thread, () => follow(), { flush: 'post' })
+
+function onSend(text: string) {
+  void send(text)
+  void jumpToEnd()
+}
+
+function onRetry() {
+  void retry()
+  void jumpToEnd()
+}
+
+async function onNewConversation() {
+  await newConversation()
+  void jumpToEnd()
+  composer.value?.focus()
+}
 </script>
 
 <template>
-  <main class="mx-auto max-w-3xl px-4 py-16 font-sans">
-    <h1 class="font-display text-5xl font-bold">Gerwin Overeem</h1>
-    <p class="mt-4 text-2xl font-light">{{ t('placeholder') }}</p>
-  </main>
+  <div class="flex min-h-dvh flex-col">
+    <SiteHeader />
+    <ChatThread class="flex-1" :items="thread" @ask="onSend" @retry="onRetry" />
+    <ChatComposer
+      ref="composer"
+      :busy="busy"
+      :full="full"
+      :has-conversation="messages.length > 0"
+      @send="onSend"
+      @new-conversation="onNewConversation"
+    />
+    <div ref="pageEnd">
+      <SiteFooter />
+    </div>
+  </div>
 </template>
