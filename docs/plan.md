@@ -50,6 +50,10 @@ Sources for every step:
 ### 5. Meeting tool
 - `server/utils/meeting.ts`: Zod schema (with the header-injection rules), the per-request send state, Resend with fixed `to`, `from` and `subject`, plain-text body; `stopWhen` and `prepareStep` in the chat route.
 - Unit tests for the schema and the send state (parallel calls, failed send, validation failure).
+- Route tests for `POST /api/chat` with the AI SDK's mock model (`ai/test`) instead of the gateway, and a stubbed email send instead of Resend, so they are free, deterministic and send nothing:
+  - the chat route's wiring: HTTP 400 and 500 paths, a stream error arriving as `chat_error` with only the one-line log, the finish reason as message metadata, the provider options sent to the model
+  - the tool loop, with the mock scripting tool calls: at most one email per request (also with two parallel calls), `already_sent` when the history holds a successful send, `send_in_progress`, a failed send allowing a retry, an invalid call never sending, the third step getting `toolChoice: "none"`
+  - These test the code, not the model's judgement: whether the model follows the rules is checked against the real model, by hand in this step and with the real content in step 10.
 - **Gerwin validates:** requests a meeting through `curl` or a minimal test page: the email arrives with the right content and `reply-to`; "no, never mind", a second request, an empty message and an injected `Bcc:` all behave as the "Tool" section of the test plan says.
 
 ### 6. Conversation log
@@ -77,6 +81,7 @@ Sources for every step:
 - Gerwin writes `server/assets/content/about.md` from the seven questions in the spec, replacing the dummy.
 - One-off CV conversion with Claude Code, as `docs/cv-conversion.md` allows for v1: `private/cv.pdf` → `server/assets/content/cv.md`, with the required headings and without phone number, date of birth, nationality, home address or photo, replacing the dummy.
 - If the dummy content led to example questions or copy that don't fit the real content, adjust them now.
+- The model's behaviour is checked here, against the real model and the real content, by running the test plan's "Content" and "Languages" questions by hand. The mock-model tests from step 5 cover the code, not this. An automated eval set for these questions stays under the spec's "Later".
 - **Gerwin validates:** reads both files line by line: no personal data that should not be public, and `about.md` answers every example question and every hard question from the test plan. `grep -r "DUMMY CONTENT" server/assets/content` finds nothing. Locally, the "Content" section of the test plan gives answers he would give himself.
 
 ### 11. Deploy to a preview, README (deploy)
