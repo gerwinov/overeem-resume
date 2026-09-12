@@ -1,4 +1,28 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
 .history/
+.vercel
+
+# Local env files
 .env*
 !.env.example
+
+# Source CV with personal data (see docs/cv-conversion.md)
 private/

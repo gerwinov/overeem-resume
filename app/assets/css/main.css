@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+/* Tailwind's dark: follows color-mode's class, not the OS setting, so an explicit Light choice wins. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: "Oxygen", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Source Sans 3", "Source Sans Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
