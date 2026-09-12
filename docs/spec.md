@@ -86,10 +86,14 @@ i18n/locales/
   nl.json                  # all UI copy in Dutch
   en.json                  # all UI copy in English
 server/
-  api/chat.post.ts         # validates the body, runs streamText with the tool, returns the UI message stream
+  api/chat.post.ts         # reads the body (at most 200 KB), loads the content, hands over to handleChat
   assets/content/
     cv.md                  # CV as plain text, WITHOUT phone number, date of birth or home address (see docs/cv-conversion.md)
     about.md               # what is NOT in the CV, in Gerwin's own words (see below)
+  utils/chat.ts            # handleChat: validation, prompt, streamText with the tool, the UI message stream
+  utils/chat-request.ts    # body validation (the limits in "Safety & cost")
+  utils/history.ts         # history cleaning and the meeting state
+  utils/body.ts            # reading a body up to a byte limit
   utils/prompt.ts          # builds the system prompt from instructions + content
   utils/meeting.ts         # the request_meeting tool: validation, send state, sending via Resend
   plugins/langsmith.ts     # registers the LangSmith telemetry integration once per server instance
@@ -100,7 +104,7 @@ The content files live in Nitro's server assets (`useStorage('assets:server')`),
 ### API contract
 
 - `POST /api/chat` with the body the `@ai-sdk/vue` transport sends: `{ messages: UIMessage[] }` plus `locale: "nl" | "en"`, added through the transport's `body` option. `locale` is the current UI language; it does not decide the answer language (behaviour rule 6) and is otherwise used only in the meeting email and as metadata in the conversation log. The transport also sends the chat's `id` with every request: the server uses it only as the conversation log's `thread_id`, after validating it as a short random ID (at most 64 characters of `A–Z`, `a–z`, `0–9`, `_` and `-`; anything else is replaced by a fresh server-generated ID). Other fields the transport adds are ignored.
-- The server validates the messages (the SDK's UI message validation plus Zod for the limits in "Safety & cost"), converts them with `convertToModelMessages` and returns the `streamText` result as a UI message stream response. The SDK handles framing and the end of the stream; answer text cannot forge stream parts.
+- The server validates the messages with its own Zod schema (structure, allowed parts and the limits in "Safety & cost"). The SDK's UI message validation is not used on top: with the tool's schema it would reject a history that holds a failed call with invalid input, which the visitor must be able to continue after. It then converts the messages with `convertToModelMessages` and returns the `streamText` result as a UI message stream response. The SDK handles framing and the end of the stream; answer text cannot forge stream parts.
 - Allowed parts: user messages contain only `text` parts; assistant messages only `text`, `step-start` and `tool-request_meeting` parts, the latter in any state (`input-streaming`, `input-available`, `output-available`, `output-error`), so a failed or cut-off call never blocks the next message. Anything else is rejected. Before `convertToModelMessages`, the server cleans the history in this order:
   1. Drop `tool-request_meeting` parts without an output (`input-streaming`, `input-available`: a call that was cut off), because the model API rejects a tool call without a result. `output-error` parts are kept, so the model sees that the call failed.
   2. Drop `step-start` parts that are no longer followed by any `text` or tool part.
@@ -148,7 +152,13 @@ Only what he actually wants to make public. The chat can only be as good as this
 1. Offer a meeting when the visitor wants to get in touch, or when you cannot answer a question.
 2. Collect name, email address and a short message (organization optional), then show a summary and ask for explicit confirmation.
 3. Call `request_meeting` only when the visitor's latest message explicitly confirms the summary. On "no" or a change, send nothing (after a change, show the new summary).
-4. Judge the send by all `request_meeting` results of the turn together. If any of them is `{ ok: true }`, the request was sent: say so once, and treat `already_sent` or `send_in_progress` from other calls in the same turn as duplicates, not failures. If there is no `{ ok: true }` but there is `already_sent`, an earlier request in this conversation went through: say so, without apologizing. Otherwise nothing was sent: apologize and give the email address from `<cv>`. Never say the request was sent on any other basis.
+4. Judge the send by all `request_meeting` results of the turn together, in this order, stopping at the first that applies:
+   1. Any result is `{ ok: true }`: the request was sent. Say so once, and treat `already_sent` or `send_in_progress` from other calls in the same turn as duplicates, not failures.
+   2. Any result is `already_sent`: an earlier request in this conversation went through. Say so, without apologizing.
+   3. Any result is `invalid_input` (which names the fields), or the tool reports that its input was invalid: nothing was sent. Ask the visitor for the missing or wrong details, then show the corrected summary and ask for confirmation again.
+   4. Otherwise nothing was sent: apologize and give the email address from `<cv>`.
+
+   Never say the request was sent on any other basis.
 5. One request per conversation.
 
 ## Tool: `request_meeting`
@@ -178,7 +188,7 @@ Only what he actually wants to make public. The chat can only be as good as this
 - One request per conversation: when the history already contains a successful send (see "Meeting state"), the tool returns `{ ok: false, reason: "already_sent" }` without sending. Since the history comes from the client, this is not a hard limit; the hard bounds are the firewall rule and Resend's daily sending limit. The same bounds cover the one remaining gap: the stream dropping between the email being sent and its tool result reaching the browser.
 - Within one request (across multiple steps or parallel tool calls, which the SDK executes concurrently) the tool sends at most one email. A per-request state (`idle` / `sending` / `sent`), created in the request handler and closed over by `execute`, is handled in this order:
   1. State `sent` → return `{ ok: false, reason: "already_sent" }`; state `sending` → return `{ ok: false, reason: "send_in_progress" }`.
-  2. Validate the input; on failure return the validation error, state stays `idle`.
+  2. Validate the input; on failure return `{ ok: false, reason: "invalid_input", fields: [...] }` with the names of the invalid fields (never their values), state stays `idle`. (The SDK already rejects input that fails `inputSchema` before `execute` runs; this second check keeps the send path safe on its own.)
   3. Set the state to `sending`.
   4. `await` the send: on success set `sent` and return `{ ok: true }`; on failure set `idle` again and return `{ ok: false, reason: "send_failed" }`.
 

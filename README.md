@@ -27,7 +27,7 @@ A chat on [overeem.io](https://overeem.io) where visitors ask about Gerwin Overe
    cp .env.example .env
    ```
 
-   For the steps built so far, no variables are needed yet: the placeholder page runs without them.
+   The chat needs `AI_GATEWAY_API_KEY` (and AI Gateway credits: Claude Haiku is not in the free tier). Meeting requests also need `RESEND_API_KEY`, `MEETING_RECIPIENT` and `MEETING_FROM`; without them the chat still works, but a meeting request fails and the chat offers the email address instead.
 
 3. Start the dev server and open http://localhost:3000:
 
