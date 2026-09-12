@@ -36,6 +36,9 @@ export type PromptInput = {
   now: Date
 }
 
+/** HTML comments in the content files are notes for their author, never content for the model. */
+const withoutComments = (content: string) => content.replace(/<!--[\s\S]*?-->/g, '').replace(/\n{3,}/g, '\n\n').trim()
+
 export function renderSystemPrompt({ cv, about, locale, meetingSent, now }: PromptInput): string {
   const today = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Amsterdam', dateStyle: 'long' }).format(now)
   const dynamic = [
@@ -45,8 +48,8 @@ export function renderSystemPrompt({ cv, about, locale, meetingSent, now }: Prom
   ].filter(Boolean)
 
   return [
-    `<cv>\n${cv.trim()}\n</cv>`,
-    `<about>\n${about.trim()}\n</about>`,
+    `<cv>\n${withoutComments(cv)}\n</cv>`,
+    `<about>\n${withoutComments(about)}\n</about>`,
     RULES,
     TOOL_RULES,
     dynamic.join('\n'),

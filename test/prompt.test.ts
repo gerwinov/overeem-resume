@@ -9,6 +9,14 @@ describe('renderSystemPrompt', () => {
     expect(prompt.startsWith('<cv>\n# Profiel\nCV text\n</cv>\n\n<about>\nAbout text\n</about>')).toBe(true)
   })
 
+  it('leaves the authors\' HTML comments out of the content', () => {
+    const about = 'Intro\n\n<!-- TODO Gerwin: rewrite this\n  paragraph -->\nParagraph'
+    const prompt = renderSystemPrompt({ ...base, cv: '<!-- DUMMY CONTENT -->\n# Profiel', about })
+    expect(prompt).not.toMatch(/TODO|DUMMY|<!--/)
+    expect(prompt).toContain('<cv>\n# Profiel\n</cv>')
+    expect(prompt).toContain('<about>\nIntro\n\nParagraph\n</about>')
+  })
+
   it('ends with the date and the website language', () => {
     const prompt = renderSystemPrompt(base)
     expect(prompt).toContain("Today's date: 12 September 2026.")
