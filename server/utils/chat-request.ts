@@ -1,15 +1,12 @@
 import { z } from 'zod'
 import type { UIMessage } from 'ai'
+import { LOCALES, MAX_MESSAGES, MAX_VISITOR_MESSAGE_CHARS } from '../../shared/utils/chat'
+import type { Locale } from '../../shared/utils/chat'
 
-// Limits from docs/spec.md, "Safety & cost".
-export const MAX_MESSAGES = 30
-export const MAX_VISITOR_MESSAGE_CHARS = 1000
+// Limit from docs/spec.md, "Safety & cost"; the others are shared with the page.
 export const MAX_HISTORY_CHARS = 30_000
 
 const CHAT_ID = /^[\w-]{1,64}$/
-
-export const LOCALES = ['nl', 'en'] as const
-export type Locale = (typeof LOCALES)[number]
 
 const textPart = z.object({
   type: z.literal('text'),

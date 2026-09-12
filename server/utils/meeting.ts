@@ -1,7 +1,7 @@
 import { tool } from 'ai'
 import { Resend } from 'resend'
 import { z } from 'zod'
-import type { Locale } from './chat-request'
+import type { Locale } from '../../shared/utils/chat'
 
 // Header-injection rules from docs/spec.md, "Tool: request_meeting".
 const SINGLE_LINE = /^[^\p{Cc}\p{Zl}\p{Zp}]*$/u

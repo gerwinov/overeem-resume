@@ -1,8 +1,7 @@
 import type { UIMessage } from 'ai'
+import { isMeetingPart } from '../../shared/utils/chat'
 
 type Part = UIMessage['parts'][number]
-
-const isMeetingPart = (part: Part) => part.type === 'tool-request_meeting'
 
 const hasOutput = (part: Part) =>
   'state' in part && (part.state === 'output-available' || part.state === 'output-error')
@@ -53,15 +52,4 @@ function dropIncomplete(messages: UIMessage[]): UIMessage[] {
     if (kept.some(isContent)) cleaned.push({ ...message, parts: kept })
   }
   return cleaned
-}
-
-function isSuccessfulSend(part: Part) {
-  if (!isMeetingPart(part) || !('state' in part) || part.state !== 'output-available') return false
-  const output = (part as { output?: unknown }).output
-  return typeof output === 'object' && output !== null && (output as { ok?: unknown }).ok === true
-}
-
-/** Whether an earlier request in this conversation was sent successfully (docs/spec.md, "Meeting state"). */
-export function hasSuccessfulSend(messages: UIMessage[]): boolean {
-  return messages.some(message => message.role === 'assistant' && message.parts.some(isSuccessfulSend))
 }

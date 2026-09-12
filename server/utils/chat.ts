@@ -1,9 +1,10 @@
 import { convertToModelMessages, createUIMessageStreamResponse, isStepCount, streamText, toUIMessageStream } from 'ai'
-import type { FinishReason, LanguageModel, UIMessage } from 'ai'
+import type { LanguageModel } from 'ai'
+import { hasSuccessfulSend } from '../../shared/utils/chat'
+import type { CvChatMessage, Locale } from '../../shared/utils/chat'
 import { parseChatRequest } from './chat-request'
-import type { Locale } from './chat-request'
 import type { ChatTracing } from './tracing'
-import { cleanHistory, hasSuccessfulSend } from './history'
+import { cleanHistory } from './history'
 import { createMeetingTool } from './meeting'
 import type { SendMeetingEmail } from './meeting'
 import { renderSystemPrompt } from './prompt'
@@ -68,7 +69,7 @@ export async function handleChat(body: unknown, deps: ChatDeps): Promise<Respons
   const log = deps.log ?? console.error
   try {
     const { cv, about } = await deps.loadContent()
-    const meetingSent = hasSuccessfulSend(request.messages)
+    const meetingSent = request.messages.some(hasSuccessfulSend)
     const tools = {
       request_meeting: createMeetingTool({ alreadySent: meetingSent, locale: request.locale, send: deps.sendMeetingEmail, log }),
     }
@@ -106,7 +107,7 @@ export async function handleChat(body: unknown, deps: ChatDeps): Promise<Respons
     })
 
     return createUIMessageStreamResponse({
-      stream: toUIMessageStream<typeof tools, UIMessage<{ finishReason?: FinishReason }>>({
+      stream: toUIMessageStream<typeof tools, CvChatMessage>({
         stream: result.stream,
         tools,
         messageMetadata: ({ part }) => (part.type === 'finish' ? { finishReason: part.finishReason } : undefined),

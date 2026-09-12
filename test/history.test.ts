@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { UIMessage } from 'ai'
-import { cleanHistory, hasSuccessfulSend } from '../server/utils/history'
+import { cleanHistory } from '../server/utils/history'
 
 const user = (text: string): UIMessage => ({ id: `u-${text}`, role: 'user', parts: [{ type: 'text', text }] })
 const assistant = (id: string, parts: unknown[]): UIMessage => ({ id, role: 'assistant', parts } as UIMessage)
@@ -60,15 +60,5 @@ describe('cleanHistory', () => {
   it('drops empty text and step-starts without content after them', () => {
     const messages = [user('Hoi'), assistant('a1', [{ type: 'step-start' }, { type: 'text', text: 'Hallo' }, { type: 'step-start' }, { type: 'text', text: '  ' }]), user('?')]
     expect(cleanHistory(messages)[1]!.parts).toEqual([{ type: 'step-start' }, { type: 'text', text: 'Hallo' }])
-  })
-})
-
-describe('hasSuccessfulSend', () => {
-  it('is true only for a meeting part with output { ok: true }', () => {
-    expect(hasSuccessfulSend([user('x'), assistant('a', [meeting('output-available', { ok: true })])])).toBe(true)
-    expect(hasSuccessfulSend([user('x'), assistant('a', [meeting('output-available', { ok: false, reason: 'send_failed' })])])).toBe(false)
-    expect(hasSuccessfulSend([user('x'), assistant('a', [meeting('output-error')])])).toBe(false)
-    expect(hasSuccessfulSend([user('x'), assistant('a', [meeting('input-available')])])).toBe(false)
-    expect(hasSuccessfulSend([user('x')])).toBe(false)
   })
 })

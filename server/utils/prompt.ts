@@ -1,4 +1,4 @@
-import type { Locale } from './chat-request'
+import type { Locale } from '../../shared/utils/chat'
 
 // Behaviour rules from docs/spec.md, "System prompt". Keep the two in sync.
 const RULES = `You are an AI assistant that Gerwin built to answer questions about him, on his website overeem.io.
