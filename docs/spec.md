@@ -92,7 +92,7 @@ i18n/locales/
 server/
   api/chat.post.ts         # reads the body (at most 200 KB), loads the content, hands over to handleChat
   assets/content/
-    cv.md                  # CV as plain text, WITHOUT phone number, date of birth or home address (see docs/cv-conversion.md)
+    cv.md                  # CV as plain text, WITHOUT phone number, date of birth or home address (see docs/cv-conversion-spec.md)
     about.md               # what is NOT in the CV, in Gerwin's own words (see below)
   utils/chat.ts            # handleChat: validation, prompt, streamText with the tool, the UI message stream
   utils/chat-request.ts    # body validation (the limits in "Safety & cost")
@@ -135,7 +135,7 @@ Only what he actually wants to make public. The chat can only be as good as this
 
 ## System prompt
 
-1. Content, wrapped in tags: `<cv>…</cv>` and `<about>…</about>` (long documents at the top)
+1. Content, wrapped in tags: `<cv>…</cv>` and `<about>…</about>` (long documents at the top). HTML comments in the content files (`<!-- … -->`) are notes for their author and are left out, so a draft note never reaches the model.
 2. Role and behaviour rules (below)
 3. Tool rules (below)
 4. Today's date, the UI language (`locale`, labelled as a last-resort hint for rule 6 only), and "a meeting request has already been sent in this conversation" when the history contains a successful send (see "Meeting state")
@@ -361,7 +361,7 @@ Transfers outside the EU are covered by each service's data processing agreement
 
 ## Env variables
 
-`.env.example` in the repository root lists every variable below (plus `CV_PII_DENYLIST` from `docs/cv-conversion.md`), each with a comment on what it is, where to get it and where it is needed; `README.md` explains how to set up `.env` from it and how to configure the variables on Vercel. The build order is in `docs/plan.md`.
+`.env.example` in the repository root lists every variable below (plus `CV_PII_DENYLIST` from `docs/cv-conversion-spec.md`), each with a comment on what it is, where to get it and where it is needed; `README.md` explains how to set up `.env` from it and how to configure the variables on Vercel. The build order is in `docs/plan.md`.
 
 ```
 AI_GATEWAY_API_KEY=       # local development only; on Vercel the deployment's OIDC token is used
