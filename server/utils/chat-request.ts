@@ -6,6 +6,8 @@ export const MAX_MESSAGES = 30
 export const MAX_VISITOR_MESSAGE_CHARS = 1000
 export const MAX_HISTORY_CHARS = 30_000
 
+const CHAT_ID = /^[\w-]{1,64}$/
+
 export const LOCALES = ['nl', 'en'] as const
 export type Locale = (typeof LOCALES)[number]
 
@@ -43,11 +45,13 @@ const assistantMessage = z.object({
 })
 
 const chatRequestSchema = z.object({
+  // The chat's random ID from the @ai-sdk/vue transport; it groups the conversation in the log.
+  id: z.unknown().optional(),
   messages: z.array(z.discriminatedUnion('role', [userMessage, assistantMessage])).min(1).max(MAX_MESSAGES),
   locale: z.enum(LOCALES),
 })
 
-export type ChatRequest = { messages: UIMessage[], locale: Locale }
+export type ChatRequest = { chatId: string, messages: UIMessage[], locale: Locale }
 
 type Parsed = z.infer<typeof chatRequestSchema>
 type ParsedMessage = Parsed['messages'][number]
@@ -73,7 +77,7 @@ function historyChars(messages: ParsedMessage[]) {
 export function parseChatRequest(body: unknown): ChatRequest | null {
   const result = chatRequestSchema.safeParse(body)
   if (!result.success) return null
-  const { messages, locale } = result.data
+  const { id, messages, locale } = result.data
 
   if (messages[0]?.role !== 'user' || messages.at(-1)?.role !== 'user') return null
   for (const message of messages) {
@@ -83,5 +87,7 @@ export function parseChatRequest(body: unknown): ChatRequest | null {
   }
   if (historyChars(messages) > MAX_HISTORY_CHARS) return null
 
-  return { messages: messages as UIMessage[], locale }
+  // A missing or malformed ID is replaced, so that request becomes its own thread in the log.
+  const chatId = typeof id === 'string' && CHAT_ID.test(id) ? id : crypto.randomUUID()
+  return { chatId, messages: messages as UIMessage[], locale }
 }

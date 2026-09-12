@@ -96,7 +96,7 @@ server/
   utils/body.ts            # reading a body up to a byte limit
   utils/prompt.ts          # builds the system prompt from instructions + content
   utils/meeting.ts         # the request_meeting tool: validation, send state, sending via Resend
-  plugins/langsmith.ts     # registers the LangSmith telemetry integration once per server instance
+  utils/tracing.ts         # the LangSmith integration for one request (thread_id), and its flush
 ```
 
 The content files live in Nitro's server assets (`useStorage('assets:server')`), so they are bundled with the server function and never shipped to the client.
@@ -307,9 +307,9 @@ Gerwin reads full conversations to see what visitors ask, check whether the answ
 **LangSmith setup**
 - Free Developer plan: 1 seat (Gerwin), 5,000 traces a month, traces kept 14 days and then deleted automatically. One chat request is one trace, so a few hundred conversations a month fit easily.
 - EU region: the account is created on `eu.smith.langchain.com`, and the server sends to the EU API endpoint. LangSmith is run by LangChain, a US company; its data processing agreement covers the processing.
-- Integration: the AI SDK 7 telemetry integration from the `langsmith` package (`LangSmithTelemetry`, registered with the AI SDK's `registerTelemetry()`), set up once in a Nitro server plugin (`server/plugins/langsmith.ts`). Vendors document Next.js and plain Node, not Nitro, so verify this wiring in the first test.
-- Flushing: the chat route hands `awaitPendingTraceBatches()` to `waitUntil` from `@vercel/functions`, so traces are sent after the response without the function ending first.
-- Threads: every trace carries the chat's random ID as `thread_id` metadata, so LangSmith's thread view shows a whole conversation as one chat.
+- Integration: the AI SDK 7 telemetry integration from the `langsmith` package (`LangSmithTelemetry` from `langsmith/experimental/vercel`), created per request in `server/utils/tracing.ts` and passed to `streamText` through its `telemetry.integrations` option. Per request, not once through `registerTelemetry()`, because each trace needs its own conversation's `thread_id`. Each request gets its own LangSmith client, so its flush waits only for its own trace, not for other requests on the same instance. Tracing is off unless `LANGSMITH_TRACING` is `true` and a key is set.
+- Flushing: `awaitPendingTraceBatches()` runs after the stream has ended (the UI message stream's `onEnd`, with a 2-minute safety net) and gets at most 10 seconds; `waitUntil` from `@vercel/functions` keeps the function alive for it after the response. If the trace cannot be sent, the chat is unaffected: the server logs `[chat] trace not sent`, and the LangSmith client logs its own warning with the HTTP status and trace IDs, never conversation content.
+- Threads: every trace carries the chat's random ID as `thread_id` metadata (plus `locale`), so LangSmith's thread view shows a whole conversation as one chat.
 
 **Requirements**
 - **What is stored, per turn:** the whole conversation (visitor messages, answers, `request_meeting` calls and results), grouped per conversation by the chat's random ID, plus UI language, model, finish reason, token counts and time. The system prompt (CV and `about.md`) is part of each trace as well; it holds nothing about the visitor.

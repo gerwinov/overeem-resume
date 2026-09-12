@@ -1,3 +1,5 @@
+import { waitUntil } from '@vercel/functions'
+
 const MODEL = 'anthropic/claude-haiku-4.5'
 // A body above this cannot be valid under the limits in parseChatRequest, so reading stops there.
 const MAX_BODY_BYTES = 200_000
@@ -16,6 +18,8 @@ const deps: ChatDeps = {
     return { cv, about }
   },
   sendMeetingEmail: sendWithResend,
+  tracing: langsmithTracing,
+  waitUntil,
 }
 
 export default defineEventHandler(async (event) => {

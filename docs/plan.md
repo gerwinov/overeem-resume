@@ -57,7 +57,7 @@ Sources for every step:
 - **Gerwin validates:** requests a meeting through `curl` or a minimal test page: the email arrives with the right content and `reply-to`; "no, never mind", a second request, an empty message and an injected `Bcc:` all behave as the "Tool" section of the test plan says.
 
 ### 6. Conversation log
-- `server/plugins/langsmith.ts`, chat ID as `thread_id`, flushing through `waitUntil`.
+- `server/utils/tracing.ts`: a LangSmith integration per request with the chat ID as `thread_id`, flushing through `waitUntil` after the stream ends.
 - **Gerwin validates:** a test conversation appears in LangSmith (EU) as one thread with the tool calls and without an IP address; with a wrong key the chat still works without delay.
 
 ### 7. Chat UI
