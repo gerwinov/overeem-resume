@@ -34,7 +34,7 @@ Sources for every step:
 
 ### 3. Scaffold, dummy content, `.env.example` and README (first version)
 - Nuxt 4 app in this repository, keeping `docs/`, `public/`, `.claude/` and `.gitignore`. TypeScript strict.
-- Modules and setup from the spec's stack: `@nuxtjs/i18n` (`no_prefix`, own cookie off), `@nuxtjs/color-mode` (`classSuffix: ""`), `@nuxt/fonts` (self-hosted Oxygen and Source Sans 3), Tailwind 4 through `@tailwindcss/vite`, `@vercel/analytics`, Zod, `ai` 7 and `@ai-sdk/vue` 4 pinned to their major versions. Vitest for unit tests.
+- Modules and setup from the spec's stack: `@nuxtjs/i18n` (`no_prefix`, own cookie off), `@nuxtjs/color-mode` (`classSuffix: ""`), `@nuxt/fonts` (self-hosted Oxygen and Source Sans 3), Tailwind 4 through `@tailwindcss/vite`, Zod, `ai` 7 and `@ai-sdk/vue` 4 pinned to their major versions. Vitest for unit tests.
 - Dummy content, so the app can be built before the real content exists (step 10): `server/assets/content/cv.md` and `about.md` with invented facts about Gerwin (so the prompt and UI work unchanged), with the same headings and structure as the real files (the CV headings from `docs/cv-conversion.md`, the seven `about.md` topics). Every file starts with the line `<!-- DUMMY CONTENT: replace in step 10 -->` and contains no real personal data. The dummy covers enough to test the behaviour rules: a few jobs with dates (for "years of experience"), a listed limitation, a "Not via the chat" topic, and an obvious gap to ask about.
 - `.env.example`: every variable from the spec's "Env variables" section and from `docs/cv-conversion.md`, each with a comment saying what it is, where to get it, and whether it is needed locally, on Vercel or both. No real values.
 - `README.md`, first version: what the project is (one paragraph, linking the spec), requirements (Node version), and how to run it locally: install, copy `.env.example` to `.env` and fill it in, `npm run dev`, `npm test`, `npm run typecheck`.
@@ -70,7 +70,7 @@ Sources for every step:
 - The privacy dialog with the table from the spec (including the fallback providers and the "Where" column) and the conversation ID with a copy button.
 - `<title>`, description, bilingual Open Graph and Twitter tags with a 1200×630 image, the existing favicons, canonical URL.
 - The hidden live region, `aria-busy`, focus handling.
-- Vercel Web Analytics.
+- Vercel Web Analytics through Vercel's plain script tag (`/_vercel/insights/script.js`, with `useHead`), loaded only in production, since the script exists only on Vercel deployments.
 - **Gerwin validates:** the dialog with keyboard only; VoiceOver announces a complete answer once; the privacy table matches the spec's; the page source has the right meta tags.
 
 ### 10. Real content (Gerwin, Claude helps)

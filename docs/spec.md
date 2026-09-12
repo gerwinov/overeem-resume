@@ -28,7 +28,7 @@ The chat is itself an example of something Gerwin built with AI, so above all it
 | Part | Choice | Why |
 |---|---|---|
 | App | Nuxt 4 (TypeScript) on Vercel (Hobby), function region `fra1` (Frankfurt) | Familiar stack; Nitro server routes cover the single API endpoint. Functions default to a US region; Frankfurt keeps them close to the (Dutch) visitors and in the EU |
-| Analytics | Vercel Web Analytics, through the Nuxt integration in `@vercel/analytics` | Page views without an extra service; see "Monitoring" |
+| Analytics | Vercel Web Analytics, through Vercel's plain script tag (`/_vercel/insights/script.js`, added with `useHead`) | Page views without an extra service; see "Monitoring". No `@vercel/analytics` package: version 2.0.1 requires `vue-router` 4 while Nuxt 4.5 ships 5, and on a one-page site the script tag does the same |
 | Languages | `@nuxtjs/i18n` | Translations and the `lang` attribute, on a single URL; see "Languages" |
 | Fonts | Oxygen 700 and Source Sans 3 (300, 400, 600, italic 400), self-hosted through `@nuxt/fonts` | The typefaces from the design (see "Design"). Self-hosted: loading them from Google's servers would send every visitor's IP address to Google |
 | Styling | Tailwind CSS 4, through `@tailwindcss/vite` | Utility classes keep a one-page UI in its components, with no separate stylesheet to maintain. Added as a Vite plugin in `nuxt.config.ts`: the `@nuxtjs/tailwindcss` module targets Tailwind 3 and has not been updated since April 2025 |
@@ -336,7 +336,7 @@ Transfers outside the EU are covered by each service's data processing agreement
 
 | What | Where |
 |---|---|
-| Page views, visitors, referrers, countries | Vercel Web Analytics, enabled in the project and added through `@vercel/analytics` (Hobby: 50,000 events per month, one month of history, no custom events) |
+| Page views, visitors, referrers, countries | Vercel Web Analytics, enabled in the project and loaded through Vercel's script tag (Hobby: 50,000 events per month, one month of history, no custom events) |
 | Number of chat messages and errors | Vercel Observability: invocations and errors of `/api/chat` |
 | Rate-limit hits | Vercel Firewall dashboard |
 | Tokens, cost, latency and provider per request | Vercel AI Gateway dashboard (request logs, credit balance) |
