@@ -1,0 +1,12 @@
+# Gerwin Overeem
+
+> Senior fullstack developer (TypeScript, Nuxt/Vue, React, Node.js) based in Apeldoorn, the Netherlands, moving into applied AI: LLM integrations, chat interfaces and conversational UX. Open to freelance work and permanent roles.
+
+overeem.io is a chat in which an AI assistant answers questions about Gerwin: his experience, how he works and what he is looking for, in Dutch or English. It answers only from his CV and his own notes, and says so when something isn't in there.
+
+The chat is built for people. Please don't call its API (`/api/chat`) from automated tools: it is rate-limited, and every request is paid for.
+
+## Contact
+
+- [LinkedIn](https://www.linkedin.com/in/gerwinovereem/): profile and work history
+- [Email](mailto:gerwin@overeem.io): intro requests, and questions the chat can't answer

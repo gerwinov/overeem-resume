@@ -4,6 +4,25 @@ const SITE_URL = 'https://overeem.io'
 const PREVIEW_TITLE = 'Gerwin Overeem · Chat with my CV'
 const PREVIEW_DESCRIPTION = 'Ask an AI about my CV, or request an intro meeting through the chat.'
 
+const SECURITY_HEADERS = {
+  'Content-Security-Policy': "base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'",
+  'X-Frame-Options': 'DENY',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+}
+
+const PERSON = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  'name': 'Gerwin Overeem',
+  'url': `${SITE_URL}/`,
+  'jobTitle': 'Senior Developer',
+  'address': { '@type': 'PostalAddress', 'addressLocality': 'Apeldoorn', 'addressCountry': 'NL' },
+  'sameAs': [process.env.NUXT_PUBLIC_LINKEDIN_URL].filter(Boolean),
+}
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -12,6 +31,11 @@ export default defineNuxtConfig({
   modules: ['@nuxtjs/i18n', '@nuxtjs/color-mode', '@nuxt/fonts'],
 
   css: ['~/assets/css/main.css'],
+
+  routeRules: {
+    '/**': { headers: SECURITY_HEADERS },
+    '/': { headers: { ...SECURITY_HEADERS, 'Cache-Control': 'private, no-cache', 'Vary': 'Accept-Language, Cookie' } },
+  },
 
   imports: {
     dirs: ['types', 'constants', '../shared/constants'],
@@ -34,6 +58,7 @@ export default defineNuxtConfig({
       ],
       meta: [
         { name: 'theme-color', content: '#f7b93a' },
+        { name: 'color-scheme', content: 'light dark' },
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'Gerwin Overeem' },
         { property: 'og:locale', content: 'en_GB' },
@@ -47,7 +72,10 @@ export default defineNuxtConfig({
         { name: 'twitter:card', content: 'summary_large_image' },
       ],
       // Vercel Web Analytics: the script only exists on Vercel deployments, so it is only added there.
-      script: process.env.VERCEL ? [{ src: '/_vercel/insights/script.js', defer: true }] : [],
+      script: [
+        { type: 'application/ld+json', innerHTML: JSON.stringify(PERSON) },
+        ...(process.env.VERCEL ? [{ src: '/_vercel/insights/script.js', defer: true }] : []),
+      ],
     },
   },
 

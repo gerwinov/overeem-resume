@@ -42,6 +42,8 @@
   html {
     @apply bg-taupe;
     color-scheme: light;
+    /* Reserved at rest, so hiding the scrollbar for the dialog below never shifts the page sideways. */
+    scrollbar-gutter: stable;
   }
 
   /* A modal dialog (the privacy note) makes the page inert, but not unscrollable. */

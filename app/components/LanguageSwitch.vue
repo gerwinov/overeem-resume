@@ -1,10 +1,11 @@
 <script setup lang="ts">
 const { t, locale, setLocale } = useI18n()
 
-// Each language is named in its own language, so it is recognizable whatever the UI language is.
+// Each language is named in its own language, so it is recognizable whatever the UI language is, and
+// the name includes the visible code, so speech input can say "click NL".
 const options: SwitchOption<Locale>[] = [
-  { value: 'nl', label: 'Nederlands', lang: 'nl' },
-  { value: 'en', label: 'English', lang: 'en' },
+  { value: 'nl', label: 'Nederlands (NL)', lang: 'nl' },
+  { value: 'en', label: 'English (EN)', lang: 'en' },
 ]
 
 let wanted: Locale | null = null

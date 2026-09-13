@@ -29,7 +29,7 @@ function onKeydown(event: KeyboardEvent, index: number) {
       ref="buttons"
       type="button"
       role="radio"
-      class="grid h-[30px] min-w-9 cursor-pointer place-items-center rounded-full px-2.5 text-[13.5px] font-semibold tracking-[.04em] text-white hover:bg-white/16 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white aria-checked:bg-white aria-checked:text-[#22303a] has-[svg]:w-8 has-[svg]:min-w-0 has-[svg]:px-0"
+      class="grid h-[30px] min-w-9 cursor-pointer place-items-center rounded-full px-2.5 text-[13.5px] font-semibold tracking-[.04em] text-white hover:bg-white/16 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white aria-checked:bg-white aria-checked:text-[#22303a] forced-colors:aria-checked:outline-2 has-[svg]:w-8 has-[svg]:min-w-0 has-[svg]:px-0"
       :aria-checked="option.value === modelValue"
       :aria-label="option.label"
       :title="option.label"

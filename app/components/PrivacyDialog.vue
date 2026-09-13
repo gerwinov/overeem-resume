@@ -65,9 +65,9 @@ defineExpose({ open })
         </template>
       </i18n-t>
 
-      <h3 :class="heading">{{ t('privacyConvTitle') }}</h3>
+      <h3 id="privacy-conversation" :class="heading">{{ t('privacyConvTitle') }}</h3>
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[34rem] border-collapse text-[15px]">
+        <table class="w-full min-w-[34rem] border-collapse text-[15px]" aria-labelledby="privacy-conversation">
           <thead>
             <tr>
               <th v-for="key in ['privacyColService', 'privacyColWhat', 'privacyColHowLong', 'privacyColWhere']" :key="key" scope="col" class="border-b border-line py-2 pr-2.5 text-left align-top text-[12.5px] font-semibold tracking-[.06em] text-ink-soft uppercase">
@@ -103,6 +103,7 @@ defineExpose({ open })
         </button>
         <span class="sr-only" aria-live="polite">{{ copied ? t('copied') : '' }}</span>
       </p>
+      <p class="m-0 text-sm text-ink-soft">{{ t('privacyUpdated') }}</p>
     </div>
   </dialog>
 </template>

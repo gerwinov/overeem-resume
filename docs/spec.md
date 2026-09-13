@@ -80,7 +80,8 @@ The AI SDK runs the loop: one `streamText` call with `request_meeting` defined w
 ```
 app/
   assets/css/main.css      # Tailwind import, dark variant, theme colors
-  pages/index.vue          # the page: header, conversation, input, footer
+  pages/index.vue          # the page: skip link, header, <main> with conversation and input, footer
+  error.vue                # the 404 and error page, in the UI language
   components/              # SiteHeader (with LanguageSwitch and ThemeSwitch on SegmentedSwitch), ChatThread, ChatComposer, ChatNotice, PrivacyDialog, SiteFooter and small parts; icons/ from the design
   composables/useCvChat.ts # useChat from @ai-sdk/vue, its transport (locale, 429), send, retry, new conversation
   composables/useStickToBottom.ts # auto-scroll while an answer streams
@@ -231,12 +232,12 @@ All UI copy lives in `i18n/locales/nl.json` and `en.json`; the Dutch strings bel
   1. the language in the `lang` cookie;
   2. otherwise, on a first visit, the browser's preferred languages: the first of `nl` and `en` in `Accept-Language`;
   3. otherwise English, also when the browser sends no language at all.
-- The language picked on the first visit is stored in the `lang` cookie straight away (only the value `nl` or `en`, `SameSite=Lax`, `Secure`, one year), so from then on the cookie decides.
+- The language picked on the first visit is stored in the `lang` cookie straight away (only the value `nl` or `en`, `SameSite=Lax`, `Secure`, one year), so from then on the cookie decides. This is deliberate, although the Website Specification advises storing only an explicit choice: the server then renders the right language on every visit, with no custom code, and the switch changes it at any time.
 - A language switch in the header ("NL | EN"). Clicking it switches the UI in place, updates `<html lang>` and updates the cookie. There is no separate "Auto" option: the first visit already follows the browser, and the switch is how a visitor changes it.
 - **The cookies need no consent banner.** `lang` and `theme` (see "Theme") only remember a display preference for the site the visitor asked for, and are used for nothing else, so they count as functional cookies under the ePrivacy rules (in the Netherlands article 11.7a of the Telecommunicatiewet). They hold no identifier and are not used for analytics or tracking, and the privacy note mentions both. The same would hold for `localStorage`, which the law treats like a cookie; cookies are used because the server can read them, so the first render is right, with no flash.
 - Switching keeps the conversation: there is no route change, and the chat lives in a composable. Switching changes only the UI copy: answers keep following the language the visitor writes in (behaviour rule 6), so earlier and later answers are unaffected.
 - If the HTML is ever cached, it must vary on `Accept-Language` and `Cookie`. By default Nuxt renders it per request on Vercel.
-- Trade-off of a single URL: there is no separate link per language to share, and search engines index one version only. Crawlers usually send no `Accept-Language`, so that is the English one.
+- Trade-off of a single URL (a deliberate choice, although the Website Specification recommends a URL per language with `hreflang`): there is no separate link per language to share, and search engines index one version only. Crawlers usually send no `Accept-Language`, so that is the English one.
 - Translated: every piece of UI copy, including the example questions, placeholders, error and rate-limit messages, the confirmation line, the cut-off note and the privacy note. Not translated: the model's answers, which follow behaviour rule 6.
 
 ### Theme
@@ -244,7 +245,7 @@ All UI copy lives in `i18n/locales/nl.json` and `en.json`; the Dutch strings bel
 - A theme switch in the header, next to the language switch, with three options: "Licht" / "Donker" / "Automatisch" ("Light" / "Dark" / "Auto"). It is a radio group with an icon and a visible or screen-reader label per option, usable with the keyboard.
 - Auto is the default and follows the operating system (`prefers-color-scheme`), including when that changes while the page is open.
 - `@nuxtjs/color-mode` with `preference: "system"` and `fallback: "light"`: it sets the theme class on `<html>` before the page paints, so there is no flash of the wrong theme on load.
-- The choice is remembered in the functional `theme` cookie (color-mode's `storage: "cookie"`; only the value `light`, `dark` or `system`, `SameSite=Lax`, `Secure`, one year). color-mode writes it on the first visit too, with the default `system`. The server reads it, so the theme switch is rendered with the right option checked; color-mode's own script applies the theme class before the page paints.
+- The choice is remembered in the functional `theme` cookie (color-mode's `storage: "cookie"`; only the value `light`, `dark` or `system`, `SameSite=Lax`, `Secure`, one year). color-mode writes it on the first visit too, with the default `system`; deliberately so, like the language. The server reads it, so the theme switch is rendered with the right option checked; color-mode's own script applies the theme class before the page paints.
 - Tailwind's `dark:` variant must follow the class color-mode sets, not the operating system: by default Tailwind 4 uses `prefers-color-scheme`, which would ignore a visitor who picks Light on a dark OS. `main.css` therefore redefines it: `@custom-variant dark (&:where(.dark, .dark *));` (with color-mode's `classSuffix: ""`, so the class is `dark`).
 - Colors are CSS custom properties per theme, exposed to Tailwind through `@theme`, so components use semantic classes (e.g. `bg-surface`, `text-muted`) instead of hard-coded color pairs. Both themes meet WCAG AA contrast (4.5:1 for text), including the chat bubbles, the confirmation line, error messages and focus outlines.
 - **Exception: white on the brand yellow.** Everything placed directly on the brand yellow `#F7B943` is white, matching overeem.io: the header text (name, explanation line, place), the send button's arrow icon and the privacy note's title bar. That is 1.75:1 instead of 4.5:1 for text, 3:1 for large text and 3:1 for icons (WCAG 1.4.11). This is a deliberate brand choice by Gerwin, and it covers only these elements: the language and theme switches in the header sit on their own dark background and do meet AA, and everything else follows the AA rule above. The send button stays recognizable by its shape and position, and it has an accessible label.
@@ -270,7 +271,7 @@ All UI copy lives in `i18n/locales/nl.json` and `en.json`; the Dutch strings bel
 - Answers are rendered as text (Vue text interpolation, never `v-html`), so model output can never inject markup.
 - **Footer:** Gerwin's LinkedIn and email address, always present at the end of the page, below the input, in every state (not pinned, like the input). It is overeem.io's taupe contact block: `#b6a999` with dark text and icons (6.35:1), in both themes. The same taupe is the page's canvas colour (on `html`, while `body` carries the page background), so overscrolling past the top or bottom shows taupe instead of a blank area. The contact details come from public runtime config (`NUXT_PUBLIC_CONTACT_EMAIL`, `NUXT_PUBLIC_LINKEDIN_URL`), because the CV itself never reaches the client.
 - **When the chat cannot answer** (rate limit, a failed turn, the credit balance used up, the model or gateway down), the message says so plainly and points to the footer's LinkedIn and email, so a visitor never leaves with nothing. A failed turn still offers its retry button.
-- **Accessibility:** usable on mobile and with the keyboard, with labels and AA contrast (see "Theme"). The message list itself is not a live region, because streamed text would be read out word by word. A separate visually hidden `aria-live="polite"` region announces each answer once it is complete, as well as the confirmation line, error and rate-limit messages. While an answer streams, the chat area has `aria-busy="true"`. Focus stays in the input after sending.
+- **Accessibility:** usable on mobile and with the keyboard, with labels and AA contrast (see "Theme"). The message list itself is not a live region, because streamed text would be read out word by word. A separate visually hidden `aria-live="polite"` region announces each answer once it is complete, as well as the confirmation line, error and rate-limit messages. While an answer streams, the chat area has `aria-busy="true"`. Focus stays in the input after sending. A skip link ("Direct naar de chat" / "Skip to the chat"), the first focusable element and visible on focus, moves focus to the page's `<main>` landmark, which holds the conversation and the input. The language options are named "Nederlands (NL)" / "English (EN)", so their accessible name contains the visible code (WCAG 2.5.3), and the checked switch option keeps an outline in forced-colours mode.
 
 ### Page metadata
 
@@ -278,6 +279,10 @@ All UI copy lives in `i18n/locales/nl.json` and `en.json`; the Dutch strings bel
 - Link previews (Open Graph and Twitter card): a fixed title, description and a 1200×630 image (`public/og-image.jpg`, the header's yellow panel and photo), in English, the site's fallback language ("Gerwin Overeem · Chat with my CV", `og:locale` `en_GB`). Crawlers such as LinkedIn's send no `Accept-Language`, so they get the English page anyway.
 - The existing favicons of overeem.io, already saved in `public/` before the live site is replaced: `favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon-152x152.png` and `safari-pinned-tab.svg` (mask color `#f7b93a`), linked the same way as on the current site.
 - A canonical URL (`https://overeem.io/`).
+- `<meta name="color-scheme" content="light dark">`, and structured data (JSON-LD `Person`: name, job title, place, LinkedIn), only facts that are already public on the page.
+- `public/sitemap.xml` with the one URL, named in `robots.txt`, and `/.well-known/security.txt` (RFC 9116) with Gerwin's email address. Its `Expires` date must be renewed within a year (now 2027-09-13).
+- `public/llms.txt` (see https://llmstxt.org/), in English, for AI agents that visit the site: the page itself is a chat they cannot sensibly use, and the CV never reaches the browser. Contents: an H1 with Gerwin's name; a one-line summary as a blockquote (role, stack, Apeldoorn, the move into applied AI, open to freelance work and permanent roles); a short paragraph saying that the site is a chat in which an AI assistant answers only from his CV and his own notes, and asking automated tools not to call `/api/chat`, which is rate-limited and paid per request; and a `## Contact` section linking LinkedIn and the email address. Only facts already public on the page or in the footer. Deliberately no link to the CV or `about.md`: the CV stays server-side, and the chat stays the way in. The summary follows the content files, so update it when they change.
+- Without JavaScript a `<noscript>` message at the top says the chat needs it and points to the footer's contact details. A custom error page (`app/error.vue`) handles 404 and other errors in the UI language, with `noindex` and a link back to the chat.
 
 ## Rate limiting
 
@@ -312,6 +317,7 @@ In code, on top of that: at most one email per request, and one per conversation
   - Only the part types listed in "API contract"
   - On violation: HTTP 400, no model call
 - API keys only in env variables, never in the client bundle. On Vercel the AI SDK reaches the gateway with the deployment's OIDC token, so no model key exists in production; locally, use `vercel env pull` (short-lived OIDC token) or `AI_GATEWAY_API_KEY` in `.env`.
+- **Response headers** (`routeRules` in `nuxt.config.ts`), on every response: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, a `Permissions-Policy` that turns off camera, microphone, geolocation, payment, USB and Topics, `Cross-Origin-Opener-Policy: same-origin`, and a Content Security Policy with `base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'`. The CSP deliberately has no `script-src`; see "Website Specification". The HTML also gets `Cache-Control: private, no-cache` and `Vary: Accept-Language, Cookie`. HTTPS, HSTS and compression come from Vercel.
 - **No content in runtime logs:** server code never writes message content or tool input to Vercel's runtime logs. Log only error types and status codes there. Apart from the services in "Privacy", the conversation log is the only place content is kept.
 
 ## Conversation log
@@ -350,13 +356,13 @@ The site sets two functional cookies, `lang` for the language and `theme` for th
 
 Transfers outside the EU are covered by each service's data processing agreement (standard contractual clauses, or the EU–US Data Privacy Framework where the company is certified). Check each service's current terms before launch and name them in the privacy note.
 
-**The privacy note** is a dialog opened from the "Privacy" link below the input field, in the UI language. It is a proper modal: focus moves into it and stays there, the page behind it does not scroll, Esc and a close button close it, and focus returns to the link. Its contents, in this order:
+**The privacy note** is a dialog opened from the "Privacy" link below the input field and the one in the footer, in the UI language. It is a proper modal: focus moves into it and stays there, the page behind it does not scroll, Esc and a close button close it, and focus returns to the link. Its contents, in this order:
 
-1. Who runs the chat (Gerwin) and how to reach him (the email address from the CV).
+1. The date it was last updated, who runs the chat (Gerwin) and how to reach him (the email address from the CV). No postal address: Gerwin is a private person, and email is a valid way to reach the controller.
 2. What happens to a conversation: the table above, in plain language, including where each service processes data and what covers transfers outside the EU. Conversation storage is one row among the others, not a headline.
 3. Meeting requests: what is sent to Gerwin and what it is used for.
 4. The two functional cookies, `lang` and `theme`: what they hold (the language and theme setting), that they are set on the first visit and changed by the switches, and that they are kept for a year.
-5. The legal basis (legitimate interest) and the visitor's rights: access, objection and deletion, by email, quoting the conversation ID shown here (with a copy button).
+5. The legal basis (legitimate interest; meeting requests at the visitor's own request) and the visitor's rights under the GDPR: access, rectification, erasure, restriction, portability and objection, by email, quoting the conversation ID shown here (with a copy button), and the right to complain to the Autoriteit Persoonsgegevens.
 
 ## Monitoring
 
@@ -385,6 +391,19 @@ LANGSMITH_API_KEY=
 LANGSMITH_ENDPOINT=https://eu.api.smith.langchain.com
 LANGSMITH_PROJECT=cv-chat
 ```
+
+## Website Specification
+
+The site was checked against the Website Specification (https://specification.website) in step 10; the obvious findings were fixed. These differences are deliberate:
+
+- **No `script-src` in the Content Security Policy** (the spec rates a full CSP "recommended"). A script policy mainly limits the damage of injected script (XSS). Here there is little to inject into and little to steal: answers and messages are rendered as text, never as HTML; there are no third-party scripts, no login, no session and no tokens; and the API is anonymous and rate-limited anyway. A nonce-based policy (for example with `nuxt-security`) would add per-request plumbing and a real risk of breaking the page. Revisit this if the page ever renders HTML or Markdown from the model, loads third-party scripts, or gets a login.
+- **The detected language and the default theme are stored in cookies on the first visit** (the spec advises storing only an explicit choice); see "Languages" and "Theme".
+- **One URL for both languages** instead of a URL per language with `hreflang`; see "Languages".
+- **No web app manifest** (PWA): the site is one chat page, not an app to install.
+- **Answers have no `lang` attribute of their own.** An answer in another language than the UI (a Dutch question on the English UI) is read by a screen reader with the UI language's voice. Accepted for v1; see "Later".
+- **Global Privacy Control (`Sec-GPC`) does not change what is logged:** every conversation is kept in the conversation log, on the basis of legitimate interest (see "Conversation log").
+- **No postal address in the privacy note**; see "Privacy".
+- **White text on the brand yellow**, below AA contrast; see "Theme".
 
 ## Test plan (before sharing the link)
 
@@ -447,6 +466,7 @@ LANGSMITH_PROJECT=cv-chat
 
 **Technical**
 - [ ] No CV content or keys visible in the client bundle or in network responses other than the answers
+- [ ] `/llms.txt` is served as `text/plain` Markdown, matches the current content files, links only LinkedIn and email, and contains no CV text beyond the one-line summary
 - [ ] Asking the chat to output `<img src=x onerror=alert(1)>` → shown as text, nothing executes
 - [ ] A provider error during the stream (e.g. an invalid gateway key locally) → generic error message, no provider or stack details in the response
 - [ ] The UI leaves the loading state on every ending: finish, error, 429 and a dropped connection
@@ -474,4 +494,5 @@ Live on overeem.io, every item in the test plan checked, and the answers are one
 
 - A small eval set with fixed questions and expected facts, to catch regressions when the prompt changes
 - Upstash rate limiting, if abuse shows up (see "Rate limiting")
+- A `lang` attribute on answers in another language than the UI, so screen readers use the right voice (the server would have to tell the page which language an answer is in)
 - The AI SDK's built-in tool approval (`toolApproval: "user-approval"`), which would turn the confirmation into a real "Versturen" button instead of the model asking. Still a UX step, not a security control

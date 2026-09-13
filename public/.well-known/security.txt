@@ -1,0 +1,4 @@
+Contact: mailto:gerwin@overeem.io
+Expires: 2027-09-13T00:00:00Z
+Preferred-Languages: nl, en
+Canonical: https://overeem.io/.well-known/security.txt

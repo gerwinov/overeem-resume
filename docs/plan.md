@@ -97,13 +97,13 @@ What is left is Gerwin's confirmation:
 ### 12. Deploy to a preview, README (deploy)
 - Import the repository in Vercel, function region `fra1`, environment variables from `.env.example` (production and preview), Web Analytics on.
 - `README.md` gets a "Deploy" section: connecting the repo, the environment variables per environment, the function region, the WAF rule (path, limit, window), the AI Gateway credits, the domain and DNS switch, and how to check a deployment.
-- The Website Specification items deferred to the preview in step 10 are checked on the preview URL.
+- The Website Specification items deferred to the preview in step 10 are checked on the preview URL: HTTPS and HSTS, compression (Brotli or gzip), the `routeRules` headers also on static files, `X-Robots-Tag: noindex` on preview URLs, HTTP/2 or HTTP/3, the `Secure` flag on both cookies, and Core Web Vitals (LCP, INP, CLS) with a performance trace.
 - **Gerwin validates:** follows the README's deploy section; the preview URL works; the full test plan except "Limits" and the go-live items passes on the preview.
 
 ### 13. Go live
 - List the URLs of the current overeem.io that are shared or indexed; keep or redirect each.
 - Point the domain from GitHub Pages to Vercel, add the WAF rule, check the link preview in LinkedIn's Post Inspector.
-- The Website Specification items deferred to go-live in step 10 are checked on overeem.io.
+- The Website Specification items deferred to go-live in step 10 are checked on overeem.io: redirects for the old URLs, the canonical domain, the link preview, a DNS CAA record (and DNSSEC if the registrar offers it), and an external uptime check.
 - **Gerwin validates:** the "Limits" section and the remaining test plan items on production; the definition of done in the spec.
 
 ## After launch (not part of this plan)

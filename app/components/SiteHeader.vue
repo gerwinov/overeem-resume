@@ -6,10 +6,10 @@ const { t } = useI18n()
   <header class="relative flex flex-wrap">
     <div class="flex h-96 w-full flex-col justify-between gap-4 bg-brand px-8 pt-[4.75rem] pb-10 text-on-brand sm:w-1/2 sm:px-6 sm:pt-10 md:px-10 lg:h-[32rem]">
       <div>
-        <h1 class="m-0 font-display text-[1.875rem] leading-tight font-bold sm:text-2xl md:text-4xl lg:text-5xl xl:text-[4rem]">
+        <h1 class="m-0 text-balance font-display text-[1.875rem] leading-tight font-bold sm:text-2xl md:text-4xl lg:text-5xl xl:text-[4rem]">
           Gerwin Overeem
         </h1>
-        <p class="m-0 text-2xl leading-[1.3] font-light sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl">
+        <p class="m-0 text-balance text-2xl leading-[1.3] font-light sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl">
           {{ t('subtitle') }}
         </p>
       </div>
@@ -23,6 +23,7 @@ const { t } = useI18n()
     <img
       class="block h-96 w-full max-w-full object-cover object-center sm:w-1/2 lg:h-[32rem]"
       src="/banner.jpg"
+      fetchpriority="high"
       :alt="t('photoAlt')"
     >
     <!-- On their own dark pill, so they read on both the yellow and the photo; below sm, above the name. -->
