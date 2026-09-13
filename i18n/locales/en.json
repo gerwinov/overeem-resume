@@ -29,5 +29,70 @@
   "themeGroup": "Theme",
   "themeLight": "Light",
   "themeDark": "Dark",
-  "themeSystem": "Auto"
+  "themeSystem": "Auto",
+  "privacyLink": "Privacy",
+  "privacyTitle": "Privacy",
+  "close": "Close",
+  "privacyWho": "This chat is run by Gerwin Overeem. You can reach him at {email}.",
+  "privacyConvTitle": "What happens to your conversation",
+  "privacyColService": "Service",
+  "privacyColWhat": "What",
+  "privacyColHowLong": "How long",
+  "privacyColWhere": "Where",
+  "privacyRows": [
+    {
+      "service": "LangSmith (LangChain), the conversation log",
+      "what": "full conversations, without IP address",
+      "howLong": "14 days, then deleted automatically",
+      "where": "EU region; LangChain is a US company"
+    },
+    {
+      "service": "Vercel AI Gateway",
+      "what": "conversation content, in transit to the model",
+      "howLong": "deleted once the request completes; its logs keep only technical data (model, provider, tokens, cost, duration, status)",
+      "where": "Vercel is a US company; location not guaranteed"
+    },
+    {
+      "service": "Anthropic (Claude), the first choice",
+      "what": "conversation content",
+      "howLong": "deleted within 30 days; up to 2 years if Anthropic's safety systems flag a conversation. Not used for training",
+      "where": "US company; processing may take place in the US"
+    },
+    {
+      "service": "Only when Anthropic fails: the same model at Claude Platform on AWS, Amazon Bedrock or Google Vertex AI",
+      "what": "conversation content",
+      "howLong": "per each provider's terms: Claude Platform on AWS is run by Anthropic; Amazon Bedrock does not store prompts and answers; Vertex AI may keep prompts its abuse monitoring flags. None of them uses them for training",
+      "where": "US companies (Anthropic, Amazon, Google); region not guaranteed"
+    },
+    {
+      "service": "Resend",
+      "what": "intro requests (name, email address, organization, message)",
+      "howLong": "30 days",
+      "where": "US company; sending domain in Resend's EU region"
+    },
+    {
+      "service": "Gerwin's inbox",
+      "what": "intro requests",
+      "howLong": "until he deletes them",
+      "where": "at his email provider"
+    },
+    {
+      "service": "Vercel",
+      "what": "technical data (page, status, IP address) in logs and the firewall; page views in Web Analytics",
+      "howLong": "logs 1 hour; visitor statistics 1 month",
+      "where": "functions in Frankfurt; Vercel is a US company"
+    }
+  ],
+  "privacyTransfers": "Processing outside the EU is covered by each service's data processing agreement: standard contractual clauses, or the EU–US Data Privacy Framework where the company is certified for it.",
+  "privacyMeetTitle": "Intro requests",
+  "privacyMeet": "If you request an intro meeting through the chat, Gerwin receives your name, email address, organization and message by email. He uses them only to get in touch with you.",
+  "privacyCookiesTitle": "Cookies",
+  "privacyCookies": "This site sets two functional cookies: lang for the language and theme for the display. They are set on your first visit, change when you use the switches at the top, and are kept for a year. They hold no ID and are used for nothing else. Page views are counted without cookies.",
+  "privacyRightsTitle": "Legal basis and your rights",
+  "privacyRights": "Conversations are kept on the basis of legitimate interest: Gerwin reads them to improve the chat. You can ask by email which data there is about you, object, or ask for deletion. Mention the conversation ID below, so Gerwin can find your conversation.",
+  "convIdLabel": "Conversation ID:",
+  "copy": "Copy",
+  "copied": "Copied",
+  "metaTitle": "Gerwin Overeem · Ask about my CV",
+  "metaDescription": "Chat with an AI about my CV: my experience, how I work and what I'm looking for. You can also request an intro meeting through the chat."
 }

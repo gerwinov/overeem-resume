@@ -1,12 +1,9 @@
 <script setup lang="ts">
-defineProps<{ items: ThreadItem[] }>()
+defineProps<{ items: ThreadItem[], busy: boolean }>()
 defineEmits<{ ask: [question: string], retry: [] }>()
 
 const { t } = useI18n()
 const suggestions = computed(() => [t('suggestion1'), t('suggestion2'), t('suggestion3'), t('suggestion4')])
-
-const noticeText = (notice: 'error' | 'error-after-send' | 'rate-limited') =>
-  ({ 'error': t('error'), 'error-after-send': t('errorAfterSend'), 'rate-limited': t('rateLimit') }[notice])
 
 /** The index of the text block that gets the "AI assistant" label: the first one, if the item shows it. */
 const labelledText = (item: Extract<ThreadItem, { kind: 'assistant' }>) =>
@@ -18,7 +15,8 @@ const waitingForText = (item: Extract<ThreadItem, { kind: 'assistant' }>) =>
 </script>
 
 <template>
-  <section class="flex flex-col gap-[18px] px-gutter pt-9 pb-2" :aria-label="t('threadLabel')">
+  <!-- Not a live region: streamed text would be read out word by word. The page announces each turn once. -->
+  <section class="flex flex-col gap-[18px] px-gutter pt-9 pb-2" :aria-label="t('threadLabel')" :aria-busy="busy">
     <div v-if="items.length === 0" class="flex max-w-[62ch] flex-col gap-[18px]">
       <ChatWho />
       <p class="m-0">{{ t('intro') }}</p>
@@ -70,7 +68,7 @@ const waitingForText = (item: Extract<ThreadItem, { kind: 'assistant' }>) =>
       <ChatNotice
         v-else-if="item.kind === 'notice'"
         :tone="item.notice === 'rate-limited' ? 'warn' : 'err'"
-        :text="noticeText(item.notice)"
+        :text="t(NOTICE_KEYS[item.notice])"
         :retry-label="item.retry ? t('retry') : undefined"
         @retry="$emit('retry')"
       />

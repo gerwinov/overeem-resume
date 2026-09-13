@@ -131,3 +131,25 @@ export function buildThread(options: {
   }
   return items
 }
+
+export type AnnouncementKey = 'meetingSent' | 'cutoff' | 'error' | 'errorAfterSend' | 'rateLimit'
+
+/** The UI copy for each notice. */
+export const NOTICE_KEYS = { 'error': 'error', 'error-after-send': 'errorAfterSend', 'rate-limited': 'rateLimit' } as const
+
+/**
+ * What the live region reads out once a turn has ended: everything after the visitor's last message,
+ * in thread order. `label` turns fixed lines into UI copy.
+ */
+export function turnAnnouncement(items: ThreadItem[], label: (key: AnnouncementKey) => string): string {
+  const lastUser = items.findLastIndex(item => item.kind === 'user')
+  const parts: string[] = []
+  for (const item of items.slice(lastUser + 1)) {
+    if (item.kind === 'assistant') {
+      for (const block of item.blocks) parts.push(block.kind === 'text' ? block.text : label('meetingSent'))
+      if (item.cutOff) parts.push(label('cutoff'))
+    }
+    else if (item.kind === 'notice') parts.push(label(NOTICE_KEYS[item.notice]))
+  }
+  return parts.join(' ')
+}

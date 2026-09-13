@@ -74,7 +74,7 @@ Sources for every step:
 - The privacy dialog with the table from the spec (including the fallback providers and the "Where" column) and the conversation ID with a copy button.
 - `<title>`, description, bilingual Open Graph and Twitter tags with a 1200×630 image, the existing favicons, canonical URL.
 - The hidden live region, `aria-busy`, focus handling.
-- Vercel Web Analytics through Vercel's plain script tag (`/_vercel/insights/script.js`, with `useHead`), loaded only in production, since the script exists only on Vercel deployments.
+- Vercel Web Analytics through Vercel's plain script tag (`/_vercel/insights/script.js`), added only in builds on Vercel, since the script exists only on Vercel deployments.
 - **Gerwin validates:** the dialog with keyboard only; VoiceOver announces a complete answer once; the privacy table matches the spec's; the page source has the right meta tags.
 
 ### 10. Website Specification audit

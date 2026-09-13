@@ -44,6 +44,11 @@
     color-scheme: light;
   }
 
+  /* A modal dialog (the privacy note) makes the page inert, but not unscrollable. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
   /* Brand yellow and the taupe background stay the same in both themes. */
   html.dark {
     color-scheme: dark;

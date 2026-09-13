@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildThread, canRetry, erroredTurnIds, isFailedTurn } from '../app/utils/chat-view'
+import { buildThread, canRetry, erroredTurnIds, isFailedTurn, turnAnnouncement } from '../app/utils/chat-view'
 import type { CvChatMessage } from '../shared/utils/chat'
 
 const user = (id: string, text: string): CvChatMessage => ({ id, role: 'user', parts: [{ type: 'text', text }] })
@@ -149,5 +149,22 @@ describe('canRetry', () => {
     expect(canRetry([user('u1', 'Ja'), assistant('a1', [step, sent], 'tool-calls')])).toBe(false)
     expect(canRetry([user('u1', 'Ja'), assistant('a1', [step, notSent], 'tool-calls')])).toBe(true)
     expect(canRetry([user('u1', 'Ja')])).toBe(true)
+  })
+})
+
+describe('turnAnnouncement', () => {
+  const label = (key: string) => `<${key}>`
+
+  it('reads only the last turn: its answer, confirmation line and cut-off note', () => {
+    const items = thread([
+      user('u1', 'Hoi'), assistant('a1', [step, text('Eerder antwoord')], 'stop'),
+      user('u2', 'Ja'), assistant('a2', [step, sent, step, text('Verstuurd, Gerwin')], 'length'),
+    ])
+    expect(turnAnnouncement(items, label)).toBe('<meetingSent> Verstuurd, Gerwin <cutoff>')
+  })
+
+  it('reads the error or rate-limit message when there is no answer', () => {
+    expect(turnAnnouncement(thread([user('u1', 'Hoi')], 'error', none, 'rate_limited'), label)).toBe('<rateLimit>')
+    expect(turnAnnouncement(thread([user('u1', 'Hoi'), assistant('a1', [step, text('Half')])], 'error', none, 'error'), label)).toBe('<error>')
   })
 })

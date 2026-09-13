@@ -28,7 +28,7 @@ The chat is itself an example of something Gerwin built with AI, so above all it
 | Part | Choice | Why |
 |---|---|---|
 | App | Nuxt 4 (TypeScript) on Vercel (Hobby), function region `fra1` (Frankfurt) | Familiar stack; Nitro server routes cover the single API endpoint. Functions default to a US region; Frankfurt keeps them close to the (Dutch) visitors and in the EU |
-| Analytics | Vercel Web Analytics, through Vercel's plain script tag (`/_vercel/insights/script.js`, added with `useHead`) | Page views without an extra service; see "Monitoring". No `@vercel/analytics` package: version 2.0.1 requires `vue-router` 4 while Nuxt 4.5 ships 5, and on a one-page site the script tag does the same |
+| Analytics | Vercel Web Analytics, through Vercel's plain script tag (`/_vercel/insights/script.js`, in `app.head` of `nuxt.config.ts`, only in builds on Vercel) | Page views without an extra service; see "Monitoring". No `@vercel/analytics` package: version 2.0.1 requires `vue-router` 4 while Nuxt 4.5 ships 5, and on a one-page site the script tag does the same |
 | Languages | `@nuxtjs/i18n` | Translations and the `lang` attribute, on a single URL; see "Languages" |
 | Fonts | Oxygen 700 and Source Sans 3 (300, 400, 600, italic 400), self-hosted through `@nuxt/fonts` | The typefaces from the design (see "Design"). Self-hosted: loading them from Google's servers would send every visitor's IP address to Google |
 | Styling | Tailwind CSS 4, through `@tailwindcss/vite` | Utility classes keep a one-page UI in its components, with no separate stylesheet to maintain. Added as a Vite plugin in `nuxt.config.ts`: the `@nuxtjs/tailwindcss` module targets Tailwind 3 and has not been updated since April 2025 |
@@ -81,7 +81,7 @@ The AI SDK runs the loop: one `streamText` call with `request_meeting` defined w
 app/
   assets/css/main.css      # Tailwind import, dark variant, theme colors
   pages/index.vue          # the page: header, conversation, input, footer
-  components/              # SiteHeader (with LanguageSwitch and ThemeSwitch on SegmentedSwitch), ChatThread, ChatComposer, ChatNotice, SiteFooter and small parts; icons/ from the design
+  components/              # SiteHeader (with LanguageSwitch and ThemeSwitch on SegmentedSwitch), ChatThread, ChatComposer, ChatNotice, PrivacyDialog, SiteFooter and small parts; icons/ from the design
   composables/useCvChat.ts # useChat from @ai-sdk/vue, its transport (locale, 429), send, retry, new conversation
   composables/useStickToBottom.ts # auto-scroll while an answer streams
   utils/chat-view.ts       # the rendering rules: what the conversation shows, from the messages (unit-tested)
@@ -107,7 +107,7 @@ The content files live in Nitro's server assets (`useStorage('assets:server')`),
 
 ### API contract
 
-- `POST /api/chat` with the body the `@ai-sdk/vue` transport sends: `{ messages: UIMessage[] }` plus `locale: "nl" | "en"`, added through the transport's `body` option. `locale` is the current UI language; it does not decide the answer language (behaviour rule 6) and is otherwise used only in the meeting email and as metadata in the conversation log. The transport also sends the chat's `id` with every request: the server uses it only as the conversation log's `thread_id`, after validating it as a short random ID (at most 64 characters of `A–Z`, `a–z`, `0–9`, `_` and `-`; anything else is replaced by a fresh server-generated ID). Other fields the transport adds are ignored.
+- `POST /api/chat` with the body the `@ai-sdk/vue` transport sends: `{ messages: UIMessage[] }` plus `locale: "nl" | "en"`, added through the transport's `body` option. `locale` is the current UI language; it does not decide the answer language (behaviour rule 6) and is otherwise used only in the meeting email and as metadata in the conversation log. The transport also sends the chat's `id` with every request: the server uses it only as the conversation log's `thread_id`, after validating it as a short random ID (at most 64 characters of `A–Z`, `a–z`, `0–9`, `_` and `-`; anything else is replaced by a fresh server-generated ID). The page creates the ID with the AI SDK's `generateId` (16 characters) and keeps it in Nuxt state (`useState`), so the server render and the browser share it; the privacy note shows it. Other fields the transport adds are ignored.
 - The server validates the messages with its own Zod schema (structure, allowed parts and the limits in "Safety & cost"). The SDK's UI message validation is not used on top: with the tool's schema it would reject a history that holds a failed call with invalid input, which the visitor must be able to continue after. It then converts the messages with `convertToModelMessages` and returns the `streamText` result as a UI message stream response. The SDK handles framing and the end of the stream; answer text cannot forge stream parts.
 - Allowed parts: user messages contain only `text` parts; assistant messages only `text`, `step-start` and `tool-request_meeting` parts, the latter in any state (`input-streaming`, `input-available`, `output-available`, `output-error`), so a failed or cut-off call never blocks the next message. Anything else is rejected. Before `convertToModelMessages`, the server cleans the history in this order:
   1. Drop `tool-request_meeting` parts without an output (`input-streaming`, `input-available`: a call that was cut off), because the model API rejects a tool call without a result. `output-error` parts are kept, so the model sees that the call failed.
@@ -268,7 +268,7 @@ All UI copy lives in `i18n/locales/nl.json` and `en.json`; the Dutch strings bel
 ### Page metadata
 
 - `<title>` and meta description in the UI language ("Gerwin Overeem · Stel je vragen over mijn cv" / "Gerwin Overeem · Ask about my CV").
-- Link previews (Open Graph and Twitter card): a fixed title, description and a 1200×630 image in `public/`, in both languages at once (e.g. "Gerwin Overeem · Chat met mijn cv / Chat with my CV"). Crawlers such as LinkedIn's send no `Accept-Language`, so a per-language preview would always show the English fallback.
+- Link previews (Open Graph and Twitter card): a fixed title, description and a 1200×630 image (`public/og-image.jpg`, the header's yellow panel and photo), in English, the site's fallback language ("Gerwin Overeem · Chat with my CV", `og:locale` `en_GB`). Crawlers such as LinkedIn's send no `Accept-Language`, so they get the English page anyway.
 - The existing favicons of overeem.io, already saved in `public/` before the live site is replaced: `favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon-152x152.png` and `safari-pinned-tab.svg` (mask color `#f7b93a`), linked the same way as on the current site.
 - A canonical URL (`https://overeem.io/`).
 
@@ -337,13 +337,13 @@ The site sets two functional cookies, `lang` for the language and `theme` for th
 | Vercel AI Gateway | conversation content, in transit to the model | deleted once the request completes (the gateway's default); its request logs keep only model, provider, tokens, cost, latency and status | Vercel is a US company; location not guaranteed |
 | Anthropic (Claude API), the first choice | conversation content | deleted within 30 days; up to 2 years if Anthropic's trust & safety systems flag a conversation. Not used for training | US company; processing may take place in the US |
 | Fallback hosts of the same model, used only when Anthropic fails: Claude Platform on AWS, Amazon Bedrock, Google Vertex AI | conversation content | per each host's terms: Claude Platform on AWS is run by Anthropic; Amazon Bedrock states it does not store prompts and answers; Vertex AI may keep prompts its abuse monitoring flags. None uses them for training, which the gateway enforces (`disallowPromptTraining`). Verify each before launch | US companies (Anthropic, Amazon, Google); region not guaranteed |
-| Resend | meeting emails (name, email address, organization, message) | 30 days on the free plan | US company; the sending domain in Resend's EU region if the plan offers it |
+| Resend | meeting emails (name, email address, organization, message) | 30 days on the free plan | US company; the sending domain in Resend's EU region |
 | Gerwin's inbox | meeting emails | until he deletes them | Gerwin's mail provider |
 | Vercel | request metadata (path, status, IP) in logs and the firewall dashboard; page views in Web Analytics | runtime logs 1 hour on Hobby; Web Analytics 1-month reporting window | functions in Frankfurt; Vercel is a US company |
 
 Transfers outside the EU are covered by each service's data processing agreement (standard contractual clauses, or the EU–US Data Privacy Framework where the company is certified). Check each service's current terms before launch and name them in the privacy note.
 
-**The privacy note** is a dialog opened from the "Privacy" link below the input field, in the UI language. It is a proper modal: focus moves into it and stays there, Esc and a close button close it, and focus returns to the link. Its contents, in this order:
+**The privacy note** is a dialog opened from the "Privacy" link below the input field, in the UI language. It is a proper modal: focus moves into it and stays there, the page behind it does not scroll, Esc and a close button close it, and focus returns to the link. Its contents, in this order:
 
 1. Who runs the chat (Gerwin) and how to reach him (the email address from the CV).
 2. What happens to a conversation: the table above, in plain language, including where each service processes data and what covers transfers outside the EU. Conversation storage is one row among the others, not a headline.

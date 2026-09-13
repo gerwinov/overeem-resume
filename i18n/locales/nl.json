@@ -29,5 +29,70 @@
   "themeGroup": "Weergave",
   "themeLight": "Licht",
   "themeDark": "Donker",
-  "themeSystem": "Automatisch"
+  "themeSystem": "Automatisch",
+  "privacyLink": "Privacy",
+  "privacyTitle": "Privacy",
+  "close": "Sluiten",
+  "privacyWho": "Deze chat is van Gerwin Overeem. Je bereikt hem via {email}.",
+  "privacyConvTitle": "Wat er met je gesprek gebeurt",
+  "privacyColService": "Dienst",
+  "privacyColWhat": "Wat",
+  "privacyColHowLong": "Hoe lang",
+  "privacyColWhere": "Waar",
+  "privacyRows": [
+    {
+      "service": "LangSmith (LangChain), het gesprekslog",
+      "what": "volledige gesprekken, zonder IP-adres",
+      "howLong": "14 dagen, daarna automatisch verwijderd",
+      "where": "EU-regio; LangChain is een Amerikaans bedrijf"
+    },
+    {
+      "service": "Vercel AI Gateway",
+      "what": "de inhoud van het gesprek, onderweg naar het model",
+      "howLong": "verwijderd zodra het verzoek klaar is; de logs bewaren alleen technische gegevens (model, aanbieder, tokens, kosten, duur, status)",
+      "where": "Vercel is een Amerikaans bedrijf; locatie niet gegarandeerd"
+    },
+    {
+      "service": "Anthropic (Claude), de eerste keus",
+      "what": "de inhoud van het gesprek",
+      "howLong": "binnen 30 dagen verwijderd; tot 2 jaar als het veiligheidssysteem van Anthropic een gesprek markeert. Niet gebruikt voor training",
+      "where": "Amerikaans bedrijf; verwerking kan in de VS plaatsvinden"
+    },
+    {
+      "service": "Alleen als Anthropic niet werkt: hetzelfde model bij Claude Platform op AWS, Amazon Bedrock of Google Vertex AI",
+      "what": "de inhoud van het gesprek",
+      "howLong": "volgens de voorwaarden van elke aanbieder: Claude Platform op AWS wordt door Anthropic beheerd; Amazon Bedrock bewaart vragen en antwoorden niet; Vertex AI kan vragen bewaren die de misbruikcontrole markeert. Geen van allen gebruikt ze voor training",
+      "where": "Amerikaanse bedrijven (Anthropic, Amazon, Google); regio niet gegarandeerd"
+    },
+    {
+      "service": "Resend",
+      "what": "kennismakingsverzoeken (naam, e-mailadres, organisatie, bericht)",
+      "howLong": "30 dagen",
+      "where": "Amerikaans bedrijf; verzenddomein in de EU-regio van Resend"
+    },
+    {
+      "service": "Inbox van Gerwin",
+      "what": "kennismakingsverzoeken",
+      "howLong": "tot hij ze verwijdert",
+      "where": "bij zijn e-mailprovider"
+    },
+    {
+      "service": "Vercel",
+      "what": "technische gegevens (pagina, status, IP-adres) in logs en de firewall; paginabezoeken in Web Analytics",
+      "howLong": "logs 1 uur; bezoekstatistieken 1 maand",
+      "where": "functies in Frankfurt; Vercel is een Amerikaans bedrijf"
+    }
+  ],
+  "privacyTransfers": "Voor verwerking buiten de EU gelden de verwerkersovereenkomsten van deze diensten: standaardcontractbepalingen, of het EU-VS Data Privacy Framework waar het bedrijf daarvoor gecertificeerd is.",
+  "privacyMeetTitle": "Kennismakingsverzoeken",
+  "privacyMeet": "Vraag je via de chat een kennismaking aan, dan krijgt Gerwin je naam, e-mailadres, organisatie en bericht per e-mail. Hij gebruikt ze alleen om contact met je op te nemen.",
+  "privacyCookiesTitle": "Cookies",
+  "privacyCookies": "Deze site zet twee functionele cookies: lang voor de taal en theme voor de weergave. Ze worden bij je eerste bezoek gezet, veranderen als je de schakelaars bovenaan gebruikt en blijven een jaar bewaard. Ze bevatten geen ID en worden nergens anders voor gebruikt. Paginabezoeken worden zonder cookies geteld.",
+  "privacyRightsTitle": "Grondslag en je rechten",
+  "privacyRights": "Gesprekken worden bewaard op basis van gerechtvaardigd belang: Gerwin leest ze om de chat te verbeteren. Je kunt per e-mail vragen welke gegevens er over jou zijn, bezwaar maken of om verwijdering vragen. Noem dan het gesprek-ID hieronder, dan vindt Gerwin je gesprek terug.",
+  "convIdLabel": "Gesprek-ID:",
+  "copy": "Kopiëren",
+  "copied": "Gekopieerd",
+  "metaTitle": "Gerwin Overeem · Stel je vragen over mijn cv",
+  "metaDescription": "Chat met een AI over mijn cv: mijn ervaring, hoe ik werk en wat ik zoek. Je kunt via de chat ook een kennismaking aanvragen."
 }

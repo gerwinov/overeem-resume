@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{ busy: boolean, full: boolean, hasConversation: boolean }>()
-const emit = defineEmits<{ send: [text: string], newConversation: [] }>()
+const emit = defineEmits<{ send: [text: string], newConversation: [], openPrivacy: [opener: HTMLElement] }>()
 
 const { t } = useI18n()
 const COUNTER_FROM = 900
@@ -82,20 +82,29 @@ defineExpose({ focus: () => input.value?.focus({ preventScroll: true }) })
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
         </button>
       </form>
-
-      <div class="mx-1 mt-2 flex flex-col-reverse items-start justify-between gap-x-5 gap-y-2 min-[561px]:flex-row">
-        <p class="m-0 max-w-[72ch] text-[13px] leading-[1.45] text-ink-soft">{{ t('privacyLine') }}</p>
-        <button
-          v-if="hasConversation"
-          type="button"
-          class="inline-flex flex-none cursor-pointer items-center gap-[5px] rounded-full border border-line bg-surface px-[11px] py-[3px] text-[13.5px] font-semibold whitespace-nowrap text-ink hover:not-disabled:border-taupe hover:not-disabled:bg-chip disabled:cursor-not-allowed disabled:opacity-50"
-          :disabled="busy"
-          @click="emit('newConversation')"
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-          {{ t('newChat') }}
-        </button>
-      </div>
     </template>
+
+    <div class="mx-1 mt-2 flex flex-col-reverse items-start justify-between gap-x-5 gap-y-2 min-[561px]:flex-row">
+      <p class="m-0 max-w-[72ch] text-[13px] leading-[1.45] text-ink-soft">
+        {{ t('privacyLine') }}
+        <button
+          type="button"
+          class="cursor-pointer text-ink underline decoration-taupe underline-offset-2"
+          @click="emit('openPrivacy', $event.currentTarget as HTMLElement)"
+        >
+          {{ t('privacyLink') }}
+        </button>
+      </p>
+      <button
+        v-if="hasConversation && !full"
+        type="button"
+        class="inline-flex flex-none cursor-pointer items-center gap-[5px] rounded-full border border-line bg-surface px-[11px] py-[3px] text-[13.5px] font-semibold whitespace-nowrap text-ink hover:not-disabled:border-taupe hover:not-disabled:bg-chip disabled:cursor-not-allowed disabled:opacity-50"
+        :disabled="busy"
+        @click="emit('newConversation')"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        {{ t('newChat') }}
+      </button>
+    </div>
   </div>
 </template>

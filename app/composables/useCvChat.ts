@@ -1,5 +1,5 @@
 import { useChat } from '@ai-sdk/vue'
-import { DefaultChatTransport } from 'ai'
+import { DefaultChatTransport, generateId } from 'ai'
 
 class RateLimitedError extends Error {
   constructor() {
@@ -12,9 +12,8 @@ export function useCvChat() {
   const { locale } = useI18n()
   const erroredIds = ref(new Set<string>())
   const errorKind = ref<ChatErrorKind | null>(null)
-  // Every change starts a new conversation: useChat recreates the chat with a new random chat ID and
-  // replaces its messages with the init's `messages`.
-  const conversation = ref(0)
+  // A new ID starts a new conversation: useChat recreates the chat and replaces its messages with `messages`.
+  const chatId = useState('cv-chat:id', () => generateId())
 
   const transport = new DefaultChatTransport<CvChatMessage>({
     api: '/api/chat',
@@ -28,10 +27,11 @@ export function useCvChat() {
   })
 
   const chat = useChat<CvChatMessage>(() => {
-    const current = conversation.value
+    const id = chatId.value
     // The error state belongs to the current conversation; a replaced chat's late callbacks are ignored.
-    const isCurrent = () => current === conversation.value
+    const isCurrent = () => id === chatId.value
     return {
+      id,
       transport,
       messages: [],
       onError: (error) => {
@@ -107,7 +107,7 @@ export function useCvChat() {
     if (busy.value) return
     requesting.value = true
     try {
-      conversation.value++
+      chatId.value = generateId()
       erroredIds.value = new Set()
       errorKind.value = null
       await nextTick()
@@ -118,7 +118,7 @@ export function useCvChat() {
   }
 
   return {
-    chatId: chat.id,
+    chatId: readonly(chatId),
     messages,
     thread,
     busy,
