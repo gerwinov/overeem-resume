@@ -34,7 +34,7 @@ Sources for every step:
 
 ### 3. Scaffold, dummy content, `.env.example` and README (first version)
 - Nuxt 4 app in this repository, keeping `docs/`, `public/`, `.claude/` and `.gitignore`. TypeScript strict.
-- Modules and setup from the spec's stack: `@nuxtjs/i18n` (`no_prefix`, own cookie off), `@nuxtjs/color-mode` (`classSuffix: ""`), `@nuxt/fonts` (self-hosted Oxygen and Source Sans 3), Tailwind 4 through `@tailwindcss/vite`, Zod, `ai` 7 and `@ai-sdk/vue` 4 pinned to their major versions. Vitest for unit tests.
+- Modules and setup from the spec's stack: `@nuxtjs/i18n` (`no_prefix`), `@nuxtjs/color-mode` (`classSuffix: ""`), `@nuxt/fonts` (self-hosted Oxygen and Source Sans 3), Tailwind 4 through `@tailwindcss/vite`, Zod, `ai` 7 and `@ai-sdk/vue` 4 pinned to their major versions. Vitest for unit tests.
 - Dummy content, so the app can be built before the real content exists (step 11): `server/assets/content/cv.md` and `about.md` with invented facts about Gerwin (so the prompt and UI work unchanged), with the same headings and structure as the real files (the CV headings from `docs/cv-conversion-spec.md`, the seven `about.md` topics). Every file starts with the line `<!-- DUMMY CONTENT: replace in step 11 -->` and contains no real personal data. The dummy covers enough to test the behaviour rules: a few jobs with dates (for "years of experience"), a listed limitation, a "Not via the chat" topic, and an obvious gap to ask about.
 - `.env.example`: every variable from the spec's "Env variables" section and from `docs/cv-conversion-spec.md`, each with a comment saying what it is, where to get it, and whether it is needed locally, on Vercel or both. No real values.
 - `README.md`, first version: what the project is (one paragraph, linking the spec), requirements (Node version), and how to run it locally: install, copy `.env.example` to `.env` and fill it in, `npm run dev`, `npm test`, `npm run typecheck`.
@@ -66,8 +66,8 @@ Sources for every step:
 - **Gerwin validates:** side by side with the prototype on desktop and phone; runs through every state against the real API; the "Tool" UI items of the test plan.
 
 ### 8. Languages and theme
-- `nl.json` and `en.json` with all copy; language detection (`localStorage`, `Accept-Language`, fallback English), the head script against the language flash, the switch.
-- Theme switch, color-mode, Tailwind's `dark` variant, theme colors through `@theme`, the brand-yellow exception.
+- `nl.json` and `en.json` with all copy; language detection through `@nuxtjs/i18n` (the `lang` cookie, `Accept-Language`, fallback English), the switch.
+- Theme switch, color-mode (with the `theme` cookie), Tailwind's `dark` variant, theme colors through `@theme`, the brand-yellow exception.
 - **Gerwin validates:** the "Languages" and "Theme" sections of the test plan.
 
 ### 9. Privacy dialog, page metadata, accessibility, analytics

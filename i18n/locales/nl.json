@@ -24,5 +24,10 @@
   "rateLimit": "Even rustig aan, probeer het over een paar minuten opnieuw. Of neem direct contact op via e-mail of LinkedIn onderaan de pagina.",
   "conversationFull": "Dit gesprek heeft het maximale aantal berichten bereikt. Begin een nieuw gesprek om verder te vragen.",
   "characterCount": "{count} van {limit} tekens",
-  "contactLabel": "Contact"
+  "contactLabel": "Contact",
+  "langGroup": "Taal",
+  "themeGroup": "Weergave",
+  "themeLight": "Licht",
+  "themeDark": "Donker",
+  "themeSystem": "Automatisch"
 }

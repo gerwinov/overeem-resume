@@ -3,8 +3,8 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <header class="flex flex-wrap">
-    <div class="flex h-96 w-full flex-col justify-between gap-4 bg-brand px-8 py-10 text-on-brand sm:w-1/2 sm:px-6 md:px-10 lg:h-[32rem]">
+  <header class="relative flex flex-wrap">
+    <div class="flex h-96 w-full flex-col justify-between gap-4 bg-brand px-8 pt-[4.75rem] pb-10 text-on-brand sm:w-1/2 sm:px-6 sm:pt-10 md:px-10 lg:h-[32rem]">
       <div>
         <h1 class="m-0 font-display text-[1.875rem] leading-tight font-bold sm:text-2xl md:text-4xl lg:text-5xl xl:text-[4rem]">
           Gerwin Overeem
@@ -25,5 +25,10 @@ const { t } = useI18n()
       src="/banner.jpg"
       :alt="t('photoAlt')"
     >
+    <!-- On their own dark pill, so they read on both the yellow and the photo; below sm, above the name. -->
+    <div class="absolute top-3.5 right-3.5 flex gap-2">
+      <LanguageSwitch />
+      <ThemeSwitch />
+    </div>
   </header>
 </template>

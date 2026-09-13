@@ -81,7 +81,7 @@ The AI SDK runs the loop: one `streamText` call with `request_meeting` defined w
 app/
   assets/css/main.css      # Tailwind import, dark variant, theme colors
   pages/index.vue          # the page: header, conversation, input, footer
-  components/              # SiteHeader, ChatThread, ChatComposer, ChatNotice, SiteFooter and small parts; icons/ from the design
+  components/              # SiteHeader (with LanguageSwitch and ThemeSwitch on SegmentedSwitch), ChatThread, ChatComposer, ChatNotice, SiteFooter and small parts; icons/ from the design
   composables/useCvChat.ts # useChat from @ai-sdk/vue, its transport (locale, 429), send, retry, new conversation
   composables/useStickToBottom.ts # auto-scroll while an answer streams
   utils/chat-view.ts       # the rendering rules: what the conversation shows, from the messages (unit-tested)
@@ -220,14 +220,15 @@ All UI copy lives in `i18n/locales/nl.json` and `en.json`; the Dutch strings bel
 
 ### Languages
 
-- One URL for both languages (`@nuxtjs/i18n` with `strategy: "no_prefix"` and its own cookie disabled). The app picks the language:
-  1. the visitor's own choice, if stored in `localStorage`;
-  2. otherwise the browser's preferred languages: the first of `nl` and `en` in `Accept-Language` on the server, so the first render is already in that language (and `navigator.languages` on the client);
+- One URL for both languages (`@nuxtjs/i18n` with `strategy: "no_prefix"`), with the module's own browser-language detection and cookie (`detectBrowserLanguage` with `useCookie: true`, `cookieKey: "lang"`). The server picks the language, so the first render is always in the right one:
+  1. the language in the `lang` cookie;
+  2. otherwise, on a first visit, the browser's preferred languages: the first of `nl` and `en` in `Accept-Language`;
   3. otherwise English, also when the browser sends no language at all.
-- A language switch in the header ("NL | EN"). Clicking it switches the UI in place, updates `<html lang>` and stores the choice in `localStorage` (only the value `nl` or `en`). The automatic choice is never stored, so a visitor who never clicks keeps following their browser. There is no separate "Auto" option: unlike the OS theme, the browser language does not change during a visit.
-- The server cannot read `localStorage`, so for a visitor whose stored choice differs from their browser language, the server renders the browser language. A small inline script in `<head>`, like the one color-mode uses, hides the page in exactly that case until the client has switched, so the visitor sees a short blank instead of the wrong language.
+- The language picked on the first visit is stored in the `lang` cookie straight away (only the value `nl` or `en`, `SameSite=Lax`, `Secure`, one year), so from then on the cookie decides.
+- A language switch in the header ("NL | EN"). Clicking it switches the UI in place, updates `<html lang>` and updates the cookie. There is no separate "Auto" option: the first visit already follows the browser, and the switch is how a visitor changes it.
+- **The cookies need no consent banner.** `lang` and `theme` (see "Theme") only remember a display preference for the site the visitor asked for, and are used for nothing else, so they count as functional cookies under the ePrivacy rules (in the Netherlands article 11.7a of the Telecommunicatiewet). They hold no identifier and are not used for analytics or tracking, and the privacy note mentions both. The same would hold for `localStorage`, which the law treats like a cookie; cookies are used because the server can read them, so the first render is right, with no flash.
 - Switching keeps the conversation: there is no route change, and the chat lives in a composable. Switching changes only the UI copy: answers keep following the language the visitor writes in (behaviour rule 6), so earlier and later answers are unaffected.
-- If the HTML is ever cached, it must vary on `Accept-Language`. By default Nuxt renders it per request on Vercel.
+- If the HTML is ever cached, it must vary on `Accept-Language` and `Cookie`. By default Nuxt renders it per request on Vercel.
 - Trade-off of a single URL: there is no separate link per language to share, and search engines index one version only. Crawlers usually send no `Accept-Language`, so that is the English one.
 - Translated: every piece of UI copy, including the example questions, placeholders, error and rate-limit messages, the confirmation line, the cut-off note and the privacy note. Not translated: the model's answers, which follow behaviour rule 6.
 
@@ -236,7 +237,7 @@ All UI copy lives in `i18n/locales/nl.json` and `en.json`; the Dutch strings bel
 - A theme switch in the header, next to the language switch, with three options: "Licht" / "Donker" / "Automatisch" ("Light" / "Dark" / "Auto"). It is a radio group with an icon and a visible or screen-reader label per option, usable with the keyboard.
 - Auto is the default and follows the operating system (`prefers-color-scheme`), including when that changes while the page is open.
 - `@nuxtjs/color-mode` with `preference: "system"` and `fallback: "light"`: it sets the theme class on `<html>` before the page paints, so there is no flash of the wrong theme on load.
-- The choice is remembered in `localStorage` (only the value `light`, `dark` or `system`), not in a cookie, like the language.
+- The choice is remembered in the functional `theme` cookie (color-mode's `storage: "cookie"`; only the value `light`, `dark` or `system`, `SameSite=Lax`, `Secure`, one year). color-mode writes it on the first visit too, with the default `system`. The server reads it, so the theme switch is rendered with the right option checked; color-mode's own script applies the theme class before the page paints.
 - Tailwind's `dark:` variant must follow the class color-mode sets, not the operating system: by default Tailwind 4 uses `prefers-color-scheme`, which would ignore a visitor who picks Light on a dark OS. `main.css` therefore redefines it: `@custom-variant dark (&:where(.dark, .dark *));` (with color-mode's `classSuffix: ""`, so the class is `dark`).
 - Colors are CSS custom properties per theme, exposed to Tailwind through `@theme`, so components use semantic classes (e.g. `bg-surface`, `text-muted`) instead of hard-coded color pairs. Both themes meet WCAG AA contrast (4.5:1 for text), including the chat bubbles, the confirmation line, error messages and focus outlines.
 - **Exception: white on the brand yellow.** Everything placed directly on the brand yellow `#F7B943` is white, matching overeem.io: the header text (name, explanation line, place), the send button's arrow icon and the privacy note's title bar. That is 1.75:1 instead of 4.5:1 for text, 3:1 for large text and 3:1 for icons (WCAG 1.4.11). This is a deliberate brand choice by Gerwin, and it covers only these elements: the language and theme switches in the header sit on their own dark background and do meet AA, and everything else follows the AA rule above. The send button stays recognizable by its shape and position, and it has an accessible label.
@@ -328,7 +329,7 @@ Gerwin reads full conversations to see what visitors ask, check whether the answ
 
 ## Privacy
 
-The site sets no cookies. In the visitor's browser, `localStorage` holds only the language and theme choice. Visitor data passes through, or is kept by, these services:
+The site sets two functional cookies, `lang` for the language and `theme` for the theme (see "Languages" and "Theme"), and nothing else in the visitor's browser. Visitor data passes through, or is kept by, these services:
 
 | Service | What | How long | Where |
 |---|---|---|---|
@@ -347,7 +348,7 @@ Transfers outside the EU are covered by each service's data processing agreement
 1. Who runs the chat (Gerwin) and how to reach him (the email address from the CV).
 2. What happens to a conversation: the table above, in plain language, including where each service processes data and what covers transfers outside the EU. Conversation storage is one row among the others, not a headline.
 3. Meeting requests: what is sent to Gerwin and what it is used for.
-4. No cookies; what `localStorage` holds.
+4. The two functional cookies, `lang` and `theme`: what they hold (the language and theme setting), that they are set on the first visit and changed by the switches, and that they are kept for a year.
 5. The legal basis (legitimate interest) and the visitor's rights: access, objection and deletion, by email, quoting the conversation ID shown here (with a copy button).
 
 ## Monitoring
@@ -396,11 +397,11 @@ LANGSMITH_PROJECT=cv-chat
 - [ ] Chat in Dutch, switch the UI to English, reply "ok" or a name → answer stays Dutch
 - [ ] First message without a clear language (e.g. only "ok") on the English UI → English answer
 - [ ] English answers keep names, job titles and technologies from the Dutch CV as written, and add nothing
-- [ ] No cookie is set; `nl.json` and `en.json` have the same keys
+- [ ] After the first visit only the cookies `lang` (the detected language) and `theme` (`system`); after choosing a language, a reload is in that language straight away; `nl.json` and `en.json` have the same keys
 
 **Theme**
 - [ ] First visit → Auto, matching the operating system; switching the OS theme while the page is open → the page follows
-- [ ] Choosing Light or Dark → persists after a reload; no cookie is set
+- [ ] Choosing Light or Dark → persists after a reload, with that option checked in the server-rendered switch
 - [ ] Light chosen while the OS is dark → the whole UI is light, including every `dark:` style
 - [ ] Reload with Dark chosen → no flash of the light theme
 - [ ] Both themes pass WCAG AA contrast, including errors, the confirmation line and focus outlines
@@ -454,7 +455,7 @@ LANGSMITH_PROJECT=cv-chat
 - [ ] Credit balance used up or gateway unreachable (simulated) → a plain message pointing to the footer's LinkedIn and email
 - [ ] Link preview checked in LinkedIn's Post Inspector: bilingual title, description and image
 - [ ] Functions run in `fra1` (Vercel project settings)
-- [ ] Web Analytics shows page views, and no cookie is set
+- [ ] Web Analytics shows page views and sets no cookie of its own
 - [ ] Old URLs of the current site that are shared or indexed still work or redirect
 - [ ] Live on overeem.io
 

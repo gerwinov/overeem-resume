@@ -13,12 +13,15 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
 
-  // The spec's "Languages": one URL, and the app picks the language itself (step 8),
-  // so the module's own detection and cookie stay off.
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'en',
-    detectBrowserLanguage: false,
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'lang',
+      cookieSecure: process.env.NODE_ENV === 'production',
+      fallbackLocale: 'en',
+    },
     locales: [
       { code: 'nl', language: 'nl-NL', name: 'Nederlands', file: 'nl.json' },
       { code: 'en', language: 'en-GB', name: 'English', file: 'en.json' },
@@ -30,6 +33,9 @@ export default defineNuxtConfig({
     preference: 'system',
     fallback: 'light',
     classSuffix: '',
+    storage: 'cookie',
+    storageKey: 'theme',
+    cookieAttrs: { maxAge: 60 * 60 * 24 * 365, path: '/', sameSite: 'lax', secure: process.env.NODE_ENV === 'production' },
   },
 
   // Self-hosted: @nuxt/fonts downloads these at build time and serves them from this site.

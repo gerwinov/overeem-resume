@@ -41,6 +41,26 @@
 @layer base {
   html {
     @apply bg-taupe;
+    color-scheme: light;
+  }
+
+  /* Brand yellow and the taupe background stay the same in both themes. */
+  html.dark {
+    color-scheme: dark;
+    --color-bubble: #4a4239;
+    --color-on-bubble: #f3eee7;
+    --color-ink: #eee9e2;
+    --color-ink-soft: #aaa196;
+    --color-paper: #181614;
+    --color-surface: #221f1c;
+    --color-line: #36312b;
+    --color-chip: #2c2824;
+    --color-ok: #7cc79a;
+    --color-ok-soft: #1d2b22;
+    --color-err: #f0908a;
+    --color-err-soft: #331e1c;
+    --color-warn-soft: #33291a;
+    --color-focus: #F7B943;
   }
 
   body {

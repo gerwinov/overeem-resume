@@ -24,5 +24,10 @@
   "rateLimit": "Slow down a little, please try again in a few minutes. Or get in touch directly by email or LinkedIn at the bottom of the page.",
   "conversationFull": "This conversation has reached the maximum number of messages. Start a new conversation to keep asking.",
   "characterCount": "{count} of {limit} characters",
-  "contactLabel": "Contact"
+  "contactLabel": "Contact",
+  "langGroup": "Language",
+  "themeGroup": "Theme",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "Auto"
 }
