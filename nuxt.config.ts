@@ -65,7 +65,7 @@ export default defineNuxtConfig({
         { rel: 'mask-icon', href: '/safari-pinned-tab.svg', color: '#f7b93a' },
       ],
       meta: [
-        { name: 'theme-color', content: '#f7b93a' },
+        { name: 'theme-color', content: '#b6a999' },
         { name: 'color-scheme', content: 'light dark' },
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'Gerwin Overeem' },

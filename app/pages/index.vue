@@ -44,7 +44,7 @@ async function onNewConversation() {
 </script>
 
 <template>
-  <div class="flex min-h-dvh flex-col">
+  <div class="flex min-h-dvh flex-col bg-paper">
     <a
       href="#main"
       class="sr-only rounded-full bg-[rgba(20,18,16,.85)] font-semibold text-white focus:not-sr-only focus:absolute focus:px-4 focus:py-2 focus:top-3.5 focus:left-3.5 focus:z-50 focus-visible:outline-white"

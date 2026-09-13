@@ -12,7 +12,7 @@ useSeoMeta({ title: () => `${title.value} · Gerwin Overeem`, robots: 'noindex' 
 </script>
 
 <template>
-  <div class="flex min-h-dvh flex-col">
+  <div class="flex min-h-dvh flex-col bg-paper">
     <header class="bg-brand px-gutter py-10 text-on-brand">
       <p class="m-0 font-display text-3xl leading-tight font-bold">Gerwin Overeem</p>
     </header>
