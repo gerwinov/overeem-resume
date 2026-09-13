@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 const read = (name: string) => readFileSync(new URL(`../server/assets/content/${name}`, import.meta.url), 'utf8')
 
-// The CV structure from docs/cv-conversion.md; the prompt and the PII guard rely on it.
+// The CV structure from docs/cv-conversion-spec.md; the prompt and the PII guard rely on it.
 const CV_HEADINGS = ['# Profiel', '# Expertise', '# Techniek', '# Werkervaring', '# Opleidingen', '# Talen', "# Hobby's"]
 
 describe('content files', () => {

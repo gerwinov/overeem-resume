@@ -33,6 +33,13 @@ describe('buildThread', () => {
     expect(items[1]).toMatchObject({ blocks: [{ kind: 'text', text: 'Het lukte helaas niet.' }] })
   })
 
+  it('removes bold markers from answers, also from an unclosed one while streaming', () => {
+    expect(thread([user('u1', 'Hoi'), assistant('a1', [step, text('**Python:** geen ervaring')], 'stop')])[1])
+      .toMatchObject({ blocks: [{ kind: 'text', text: 'Python: geen ervaring' }] })
+    expect(thread([user('u1', 'Hoi'), assistant('a1', [step, text('**Pyth')])], 'streaming')[1])
+      .toMatchObject({ blocks: [{ kind: 'text', text: 'Pyth' }] })
+  })
+
   it('shows thinking dots while waiting for the first response', () => {
     expect(thread([user('u1', 'Hoi')], 'submitted').at(-1)).toEqual({ kind: 'pending', showWho: true })
   })

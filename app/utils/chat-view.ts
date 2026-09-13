@@ -54,6 +54,9 @@ export function erroredTurnIds(messages: CvChatMessage[], status: ChatStatus, er
   return new Set(erroredIds).add(last.id)
 }
 
+/** Answers are plain text; bold markers the model writes anyway would show as literal asterisks. */
+const withoutBold = (text: string) => text.replaceAll('**', '')
+
 /**
  * The visible blocks of an assistant message. Text in a step that also calls the tool is never shown,
  * whatever the order: it was written before any tool result existed. A successful send shows a fixed
@@ -67,7 +70,7 @@ export function assistantBlocks(message: CvChatMessage, failed: boolean): Assist
       continue
     }
     if (failed) continue
-    const text = step.filter(part => part.type === 'text').map(part => (part as { text: string }).text).join('')
+    const text = withoutBold(step.filter(part => part.type === 'text').map(part => (part as { text: string }).text).join(''))
     if (text.trim()) blocks.push({ kind: 'text', text })
   }
   return blocks

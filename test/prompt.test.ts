@@ -17,6 +17,13 @@ describe('renderSystemPrompt', () => {
     expect(prompt).toContain('<about>\nIntro\n\nParagraph\n</about>')
   })
 
+  it('asks for plain text without Markdown, and short answers', () => {
+    const prompt = renderSystemPrompt(base)
+    expect(prompt).toContain('9. Length and format:')
+    expect(prompt).toContain('Never use Markdown')
+    expect(prompt).not.toContain('Language and length')
+  })
+
   it('ends with the date and the website language', () => {
     const prompt = renderSystemPrompt(base)
     expect(prompt).toContain("Today's date: 12 September 2026.")

@@ -6,7 +6,7 @@ A chat on [overeem.io](https://overeem.io) where visitors ask about Gerwin Overe
 - How it looks: [`docs/design/index.html`](docs/design/index.html) (open it in a browser)
 - The build order and its status: [`docs/plan.md`](docs/plan.md)
 
-> In development. The content in `server/assets/content/` is dummy content until step 10 of the plan.
+> In development; see the plan for which steps are done.
 
 ## Requirements
 
@@ -57,4 +57,4 @@ test/                    # unit tests
 
 ## Deploy
 
-To be written in step 11 of the plan.
+To be written in step 12 of the plan.
