@@ -34,6 +34,11 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/**': { headers: SECURITY_HEADERS },
+    // On Vercel, Nuxt's own cache rules for these paths match first and stop there, so they need the headers too.
+    '/_nuxt/**': { headers: SECURITY_HEADERS },
+    '/_nuxt/builds/**': { headers: SECURITY_HEADERS },
+    '/_nuxt/builds/meta/**': { headers: SECURITY_HEADERS },
+    '/_fonts/**': { headers: SECURITY_HEADERS },
     '/': { headers: { ...SECURITY_HEADERS, 'Cache-Control': 'private, no-cache', 'Vary': 'Accept-Language, Cookie' } },
   },
 
