@@ -57,8 +57,9 @@ export async function handleChat(body: unknown, deps: ChatDeps): Promise<Respons
   try {
     const { cv, about } = await deps.loadContent()
     const meetingSent = request.messages.some(hasSuccessfulSend)
+    const history = cleanHistory(request.messages)
     const tools = {
-      request_meeting: createMeetingTool({ alreadySent: meetingSent, locale: request.locale, send: deps.sendMeetingEmail, log }),
+      request_meeting: createMeetingTool({ alreadySent: meetingSent, history, locale: request.locale, send: deps.sendMeetingEmail, log }),
     }
 
     // The trace is sent after the answer, and nothing about tracing may affect the chat: a tracer that
@@ -81,7 +82,7 @@ export async function handleChat(body: unknown, deps: ChatDeps): Promise<Respons
     const result = streamText({
       model: deps.model,
       instructions: renderSystemPrompt({ cv, about, locale: request.locale, meetingSent, now: deps.now?.() ?? new Date() }),
-      messages: await convertToModelMessages(cleanHistory(request.messages), { tools }),
+      messages: await convertToModelMessages(history, { tools }),
       tools,
       stopWhen: isStepCount(MAX_MODEL_CALLS),
       // The last call may only answer in text, so every tool result is followed by an answer.

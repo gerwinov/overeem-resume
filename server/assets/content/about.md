@@ -75,13 +75,6 @@ Dit is zijn huidige en meest recente opdracht.
 - Hij werkte mee aan de CI/CD-pipeline die de applicatie uitrolt naar OpenShift op AWS.
 - Gerwin is hier de enige TypeScript-developer, dus de volledige Nuxt-applicatie is door hem opgebouwd. Daarbij is hij volledig zelfsturend.
 
-# Eerlijke kanttekeningen
-
-Gerwin is hier graag open over:
-- Python: Gerwin heeft geen noemenswaardige ervaring met Python. Zijn stack is TypeScript/Node. Voor een rol die draait om een Python-backend is dat het belangrijkste gat. Hij is actief bezig om zich Python volledig eigen te maken.
-- RAG in productie: zijn RAG-kennis komt uit architectuurwerk en eigen studie; hij heeft nog geen RAG-systeem in productie gebracht.
-- Achtergrond: het grootste deel van zijn recente ervaring is frontend en fullstack voor grote websites, geen pure backend of data engineering.
-
 # Wat Gerwin zoekt in een volgende rol
 
 - Zijn voorkeur: werk waarin hij AI-oplossingen bouwt voor organisaties, met zowel het bouwen als het contact met de klant.

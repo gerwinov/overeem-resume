@@ -31,7 +31,13 @@ function scriptedModel(...steps: unknown[][]) {
 
 const meeting: MeetingRequest = { name: 'Sanne de Vries', email: 'sanne@voorbeeld.nl', message: 'Graag een kennismaking.' }
 
-const body = (messages: unknown[] = [{ id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Ja, verstuur maar.' }] }]) => ({ locale: 'nl', messages })
+const confirmed = [
+  { id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Ik ben Sanne de Vries, sanne@voorbeeld.nl. Graag een kennismaking.' }] },
+  { id: 'a1', role: 'assistant', parts: [{ type: 'step-start' }, { type: 'text', text: 'Ik stuur dit: Sanne de Vries, sanne@voorbeeld.nl, "Graag een kennismaking." Klopt dat?' }] },
+  { id: 'u2', role: 'user', parts: [{ type: 'text', text: 'Ja, verstuur maar.' }] },
+]
+
+const body = (messages: unknown[] = confirmed) => ({ locale: 'nl', messages })
 
 // `log` is always this mock, so tests can read what was logged; overriding it is a type error.
 function deps(model: MockLanguageModelV4, overrides: Partial<Omit<ChatDeps, 'log'>> = {}) {
@@ -146,6 +152,22 @@ describe('handleChat: the meeting tool', () => {
     expect(send).toHaveBeenCalledTimes(2)
     expect(outputs).toEqual([{ ok: false, reason: 'send_failed' }, { ok: true }])
     expect(d.log.mock.calls.map(([line]) => line)).toContain('[meeting] send failed')
+  })
+
+  it('never sends when the model calls the tool unasked, with details it made up', async () => {
+    const vacancy = [{ id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Wij zoeken een AI-developer met Python en FastAPI.' }] }]
+    const d = deps(scriptedModel(toolStep({ ...meeting, email: 'placeholder@example.com' }), textStep('Gerwin bouwt AI-native.')))
+    const outputs = toolOutputs(await events(await handleChat(body(vacancy), d)))
+    expect(d.sendMeetingEmail).not.toHaveBeenCalled()
+    expect(outputs).toEqual([{ ok: false, reason: 'not_confirmed' }])
+  })
+
+  it('never sends before the visitor has seen a summary with their address', async () => {
+    const direct = [{ id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Sanne de Vries, sanne@voorbeeld.nl. Stuur maar een verzoek.' }] }]
+    const d = deps(scriptedModel(toolStep(meeting), textStep('Klopt dit?')))
+    const outputs = toolOutputs(await events(await handleChat(body(direct), d)))
+    expect(d.sendMeetingEmail).not.toHaveBeenCalled()
+    expect(outputs).toEqual([{ ok: false, reason: 'not_confirmed' }])
   })
 
   it('never sends for an invalid call', async () => {

@@ -1,5 +1,6 @@
+import type { UIMessage } from 'ai'
 import { describe, expect, it, vi } from 'vitest'
-import { buildMeetingEmail, createMeetingTool, meetingInputSchema } from '../server/utils/meeting'
+import { buildMeetingEmail, createMeetingTool, meetingInputSchema, shownForConfirmation } from '../server/utils/meeting'
 
 const valid = { name: 'Sanne de Vries', email: 'sanne@voorbeeld.nl', message: 'We zoeken iemand voor ons AI-team.', organization: 'Voorbeeld BV' }
 
@@ -31,10 +32,41 @@ describe('meetingInputSchema', () => {
   })
 })
 
+const user = (text: string): UIMessage => ({ id: 'u', role: 'user', parts: [{ type: 'text', text }] })
+const answer = (text: string): UIMessage => ({ id: 'a', role: 'assistant', parts: [{ type: 'step-start' }, { type: 'text', text }] })
+
+describe('shownForConfirmation', () => {
+  const summary = answer('Ik stuur: Sanne de Vries, sanne@voorbeeld.nl. Klopt dat?')
+
+  it('needs the address from the visitor and in the answer right before their latest message', () => {
+    expect(shownForConfirmation('sanne@voorbeeld.nl', [user('Mail: sanne@voorbeeld.nl.'), summary, user('Ja')])).toBe(true)
+    expect(shownForConfirmation('Sanne@Voorbeeld.nl', [user('sanne@voorbeeld.nl'), summary, user('Ja')])).toBe(true)
+  })
+
+  it('refuses an address the visitor never typed', () => {
+    expect(shownForConfirmation('sanne@voorbeeld.nl', [user('Ja'), summary, user('Ja')])).toBe(false)
+    expect(shownForConfirmation('placeholder@example.com', [user('Wij zoeken een developer.')])).toBe(false)
+  })
+
+  it('refuses when the answer right before the latest message does not show the address', () => {
+    expect(shownForConfirmation('sanne@voorbeeld.nl', [user('sanne@voorbeeld.nl, stuur maar')])).toBe(false)
+    expect(shownForConfirmation('sanne@voorbeeld.nl', [user('sanne@voorbeeld.nl'), summary, user('Nee'), answer('Wat wil je wijzigen?'), user('Toch wel')])).toBe(false)
+  })
+
+  it('leaves judging whether the latest message is a yes to the model', () => {
+    expect(shownForConfirmation('sanne@voorbeeld.nl', [user('sanne@voorbeeld.nl'), summary, user('Nee')])).toBe(true)
+  })
+
+  it('matches whole addresses only', () => {
+    expect(shownForConfirmation('sanne@voorbeeld.nl', [user('xsanne@voorbeeld.nl'), summary, user('Ja')])).toBe(false)
+    expect(shownForConfirmation('sanne@voorbeeld.nl', [user('sanne@voorbeeld.nl.com'), summary, user('Ja')])).toBe(false)
+  })
+})
+
 describe('createMeetingTool', () => {
   it('names the invalid fields, not their values, and sends nothing', async () => {
     const send = vi.fn(async () => {})
-    const meetingTool = createMeetingTool({ alreadySent: false, locale: 'nl', send, log: vi.fn() })
+    const meetingTool = createMeetingTool({ alreadySent: false, history: [], locale: 'nl', send, log: vi.fn() })
     const result = await meetingTool.execute!({ ...valid, email: 'not-an-address', message: '' }, { toolCallId: 't1', messages: [], context: {} })
     expect(result).toEqual({ ok: false, reason: 'invalid_input', fields: ['email', 'message'] })
     expect(JSON.stringify(result)).not.toContain('not-an-address')

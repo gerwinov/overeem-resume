@@ -1,4 +1,4 @@
-import { tool } from 'ai'
+import { tool, type UIMessage } from 'ai'
 import { Resend } from 'resend'
 import { z } from 'zod'
 import type { Locale } from '#shared/types/chat'
@@ -24,9 +24,28 @@ export const meetingInputSchema = z.object({
 
 export type MeetingResult =
   | { ok: true }
-  | { ok: false, reason: 'already_sent' | 'send_in_progress' | 'send_failed' }
+  | { ok: false, reason: 'already_sent' | 'send_in_progress' | 'send_failed' | 'not_confirmed' }
   // Field names only, never their values, so the model knows what to ask the visitor again.
   | { ok: false, reason: 'invalid_input', fields: string[] }
+
+const textOf = (message: UIMessage) => message.parts.map(part => (part.type === 'text' ? part.text : '')).join('\n')
+
+function mentions(text: string, email: string) {
+  const escaped = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`(?<![\\w.+-])${escaped}(?![\\w-]|\\.\\w)`, 'i').test(text)
+}
+
+/**
+ * Whether the visitor typed this email address themselves and the answer right before their latest message
+ * showed it, as the summary to confirm. Whether that latest message is a yes stays the model's call; this
+ * only stops a send with details the model made up or never showed.
+ */
+export function shownForConfirmation(email: string, history: UIMessage[]) {
+  const summary = history.at(-2)
+  return summary?.role === 'assistant'
+    && mentions(textOf(summary), email)
+    && history.some(message => message.role === 'user' && mentions(textOf(message), email))
+}
 
 /**
  * One tool instance per request. Its state makes sure a request sends at most one email, also when the
@@ -34,6 +53,7 @@ export type MeetingResult =
  */
 export function createMeetingTool(options: {
   alreadySent: boolean
+  history: UIMessage[]
   locale: Locale
   send: SendMeetingEmail
   log: (line: string) => void
@@ -41,7 +61,7 @@ export function createMeetingTool(options: {
   let state: 'idle' | 'sending' | 'sent' = options.alreadySent ? 'sent' : 'idle'
 
   return tool({
-    description: 'Sends Gerwin an intro-meeting request by email. Call it only when the visitor\'s latest message explicitly confirms the summary you showed them.',
+    description: 'Sends Gerwin an intro-meeting request by email. Call it only when the visitor\'s latest message explicitly confirms the summary you showed them, with the email address the visitor typed.',
     inputSchema: meetingInputSchema,
     execute: async (input): Promise<MeetingResult> => {
       if (state === 'sent') return { ok: false, reason: 'already_sent' }
@@ -52,6 +72,7 @@ export function createMeetingTool(options: {
         const fields = [...new Set(parsed.error.issues.map(issue => String(issue.path[0] ?? 'input')))]
         return { ok: false, reason: 'invalid_input', fields }
       }
+      if (!shownForConfirmation(parsed.data.email, options.history)) return { ok: false, reason: 'not_confirmed' }
 
       state = 'sending'
       try {
