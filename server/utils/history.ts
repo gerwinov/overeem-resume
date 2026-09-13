@@ -1,12 +1,11 @@
 import type { UIMessage } from 'ai'
+import type { MessagePart } from '../../shared/types/chat'
 import { isMeetingPart } from '../../shared/utils/chat'
 
-type Part = UIMessage['parts'][number]
-
-const hasOutput = (part: Part) =>
+const hasOutput = (part: MessagePart) =>
   'state' in part && (part.state === 'output-available' || part.state === 'output-error')
 
-const isContent = (part: Part) =>
+const isContent = (part: MessagePart) =>
   (part.type === 'text' && part.text.trim().length > 0) || isMeetingPart(part)
 
 /**

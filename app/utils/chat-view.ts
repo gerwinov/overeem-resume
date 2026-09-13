@@ -1,18 +1,8 @@
 import type { ChatStatus } from 'ai'
+import type { CvChatMessage, MessagePart } from '../../shared/types/chat'
 import { hasSuccessfulSend, isMeetingPart, isSuccessfulSend } from '../../shared/utils/chat'
-import type { CvChatMessage } from '../../shared/utils/chat'
-
-export type ChatErrorKind = 'rate_limited' | 'error'
-
-export type AssistantBlock = { kind: 'text', text: string } | { kind: 'meeting-sent' }
-
-export type ThreadItem =
-  | { kind: 'user', id: string, text: string }
-  | { kind: 'assistant', id: string, blocks: AssistantBlock[], showWho: boolean, streaming: boolean, cutOff: boolean }
-  | { kind: 'pending', showWho: boolean }
-  | { kind: 'notice', notice: 'error' | 'error-after-send' | 'rate-limited', retry: boolean }
-
-type Part = CvChatMessage['parts'][number]
+import { NOTICE_KEYS } from '../constants/chat'
+import type { AssistantBlock, ChatErrorKind, ThreadItem } from '../types/chat'
 
 /** Retrying regenerates the last answer; one with a successful send never is, so nothing is sent twice. */
 export function canRetry(history: CvChatMessage[]) {
@@ -21,8 +11,8 @@ export function canRetry(history: CvChatMessage[]) {
 }
 
 /** Splits an assistant message into its steps; every step-start begins a new one. */
-function steps(message: CvChatMessage): Part[][] {
-  const result: Part[][] = [[]]
+function steps(message: CvChatMessage): MessagePart[][] {
+  const result: MessagePart[][] = [[]]
   for (const part of message.parts) {
     if (part.type === 'step-start') {
       if (result.at(-1)!.length > 0) result.push([])
@@ -133,9 +123,6 @@ export function buildThread(options: {
 }
 
 export type AnnouncementKey = 'meetingSent' | 'cutoff' | 'error' | 'errorAfterSend' | 'rateLimit'
-
-/** The UI copy for each notice. */
-export const NOTICE_KEYS = { 'error': 'error', 'error-after-send': 'errorAfterSend', 'rate-limited': 'rateLimit' } as const
 
 /**
  * What the live region reads out once a turn has ended: everything after the visitor's last message,

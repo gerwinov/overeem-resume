@@ -1,12 +1,8 @@
 import { Client } from 'langsmith'
 import { LangSmithTelemetry } from 'langsmith/experimental/vercel'
 import type { Telemetry } from 'ai'
-import type { Locale } from '../../shared/utils/chat'
-
-export type ChatTracing = {
-  integration: Telemetry
-  flush: () => Promise<void>
-}
+import type { Locale } from '../../shared/types/chat'
+import type { ChatTracing } from '../types/chat'
 
 /**
  * A LangSmith integration for one chat request, so every trace carries its conversation's ID as

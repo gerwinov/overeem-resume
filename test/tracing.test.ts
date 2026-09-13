@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { MockLanguageModelV4, simulateReadableStream } from 'ai/test'
 import { flushTrace, handleChat } from '../server/utils/chat'
-import type { ChatDeps } from '../server/utils/chat'
+import type { ChatDeps } from '../server/types/chat'
 import { langsmithTracing } from '../server/utils/tracing'
 
 const usage = {

@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import { MockLanguageModelV4, simulateReadableStream } from 'ai/test'
-import { handleChat, PROVIDERS } from '../server/utils/chat'
-import type { ChatDeps } from '../server/utils/chat'
-import type { MeetingRequest } from '../server/utils/meeting'
+import { PROVIDERS } from '../server/constants/chat'
+import type { ChatDeps } from '../server/types/chat'
+import type { MeetingRequest } from '../server/types/meeting'
+import { handleChat } from '../server/utils/chat'
 
 const usage = {
   inputTokens: { total: 1, noCache: 1, cacheRead: undefined, cacheWrite: undefined },

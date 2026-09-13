@@ -1,21 +1,9 @@
-import type { FinishReason, UIMessage } from 'ai'
+import type { UIMessage } from 'ai'
+import type { MessagePart } from '../types/chat'
 
-// The /api/chat contract, shared by the page and the server. Limits from docs/spec.md, "Safety & cost";
-// the server enforces them, the page only avoids hitting them.
-export const MAX_MESSAGES = 30
-export const MAX_VISITOR_MESSAGE_CHARS = 1000
+export const isMeetingPart = (part: MessagePart) => part.type === 'tool-request_meeting'
 
-export const LOCALES = ['nl', 'en'] as const
-export type Locale = (typeof LOCALES)[number]
-
-/** A message as /api/chat streams it: the final finish reason arrives as metadata. */
-export type CvChatMessage = UIMessage<{ finishReason?: FinishReason }>
-
-type Part = UIMessage['parts'][number]
-
-export const isMeetingPart = (part: Part) => part.type === 'tool-request_meeting'
-
-export function isSuccessfulSend(part: Part) {
+export function isSuccessfulSend(part: MessagePart) {
   if (!isMeetingPart(part) || !('state' in part) || part.state !== 'output-available') return false
   const output = (part as { output?: unknown }).output
   return typeof output === 'object' && output !== null && (output as { ok?: unknown }).ok === true

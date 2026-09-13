@@ -1,16 +1,13 @@
 import { convertToModelMessages, createUIMessageStreamResponse, isStepCount, streamText, toUIMessageStream } from 'ai'
-import type { LanguageModel } from 'ai'
+import type { CvChatMessage } from '../../shared/types/chat'
 import { hasSuccessfulSend } from '../../shared/utils/chat'
-import type { CvChatMessage, Locale } from '../../shared/utils/chat'
+import { PROVIDERS } from '../constants/chat'
+import type { ChatDeps, ChatTracing } from '../types/chat'
 import { parseChatRequest } from './chat-request'
-import type { ChatTracing } from './tracing'
 import { cleanHistory } from './history'
 import { createMeetingTool } from './meeting'
-import type { SendMeetingEmail } from './meeting'
 import { renderSystemPrompt } from './prompt'
 
-// Anthropic first; the other three host the same model and are named in the privacy note.
-export const PROVIDERS = ['anthropic', 'claudeaws', 'bedrock', 'vertexAnthropic']
 const MAX_OUTPUT_TOKENS = 800
 const MAX_MODEL_CALLS = 3
 
@@ -44,16 +41,6 @@ export async function flushTrace(options: {
     return
   }
   await Promise.race([flushing, sleep(flushTimeoutMs)])
-}
-
-export type ChatDeps = {
-  model: LanguageModel
-  loadContent: () => Promise<{ cv: string, about: string }>
-  sendMeetingEmail: SendMeetingEmail
-  tracing?: (context: { chatId: string, locale: Locale }) => ChatTracing | undefined
-  waitUntil?: (promise: Promise<unknown>) => void
-  now?: () => Date
-  log?: (line: string) => void
 }
 
 // Only the error's type and status go to the runtime logs, never its message or any content.

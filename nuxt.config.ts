@@ -13,6 +13,15 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  imports: {
+    dirs: ['types', 'constants', '../shared/constants'],
+  },
+  nitro: {
+    imports: {
+      dirs: ['server/types', 'server/constants', 'shared/constants'],
+    },
+  },
+
   // Title and description follow the UI language (app/app.vue); everything here is the same for both.
   app: {
     head: {

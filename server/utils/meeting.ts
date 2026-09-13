@@ -1,7 +1,8 @@
 import { tool } from 'ai'
 import { Resend } from 'resend'
 import { z } from 'zod'
-import type { Locale } from '../../shared/utils/chat'
+import type { Locale } from '../../shared/types/chat'
+import type { MeetingRequest, SendMeetingEmail } from '../types/meeting'
 
 // Header-injection rules from docs/spec.md, "Tool: request_meeting".
 const SINGLE_LINE = /^[^\p{Cc}\p{Zl}\p{Zp}]*$/u
@@ -21,15 +22,11 @@ export const meetingInputSchema = z.object({
     .describe('The visitor\'s organization, if they gave one'),
 })
 
-export type MeetingRequest = z.infer<typeof meetingInputSchema>
-
 export type MeetingResult =
   | { ok: true }
   | { ok: false, reason: 'already_sent' | 'send_in_progress' | 'send_failed' }
   // Field names only, never their values, so the model knows what to ask the visitor again.
   | { ok: false, reason: 'invalid_input', fields: string[] }
-
-export type SendMeetingEmail = (request: MeetingRequest, locale: Locale) => Promise<void>
 
 /**
  * One tool instance per request. Its state makes sure a request sends at most one email, also when the

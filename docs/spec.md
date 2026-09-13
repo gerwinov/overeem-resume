@@ -85,7 +85,11 @@ app/
   composables/useCvChat.ts # useChat from @ai-sdk/vue, its transport (locale, 429), send, retry, new conversation
   composables/useStickToBottom.ts # auto-scroll while an answer streams
   utils/chat-view.ts       # the rendering rules: what the conversation shows, from the messages (unit-tested)
-shared/utils/chat.ts       # the /api/chat contract used by page and server: limits, locales, message type, the meeting state
+  types/, constants/       # types and constants that several page files use (the thread items, the switch options, the notice copy)
+shared/                    # the /api/chat contract, used by page and server
+  constants/chat.ts        # the limits both sides know, the locales
+  types/chat.ts            # the message type, the locale type
+  utils/chat.ts            # the meeting state: whether a message holds a successful send
 i18n/locales/
   nl.json                  # all UI copy in Dutch
   en.json                  # all UI copy in English
@@ -101,7 +105,10 @@ server/
   utils/prompt.ts          # builds the system prompt from instructions + content
   utils/meeting.ts         # the request_meeting tool: validation, send state, sending via Resend
   utils/tracing.ts         # the LangSmith integration for one request (thread_id), and its flush
+  types/, constants/       # types and constants that several server files use (handleChat's dependencies, the meeting types, the provider order, the history limit)
 ```
+
+A type or constant that more than one file uses lives in a `types/` or `constants/` folder: under `shared/` when page and server both use it, otherwise under `app/` or `server/`. Anything used by one file only stays in that file. These folders are auto-imported like `utils/` (`imports.dirs` and `nitro.imports.dirs` in `nuxt.config.ts`). Files the unit tests load (`app/utils/`, `server/utils/`, `shared/`) still import explicitly, because the tests run without Nuxt.
 
 The content files live in Nitro's server assets (`useStorage('assets:server')`), so they are bundled with the server function and never shipped to the client.
 
