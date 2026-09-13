@@ -1,4 +1,4 @@
-# cv-chat
+# overeem-resume
 
 A chat on [overeem.io](https://overeem.io) where visitors ask about Gerwin Overeem's experience, how he works and what he is looking for, and can request an intro meeting. Nuxt 4 on Vercel, with Claude Haiku through Vercel AI Gateway.
 
