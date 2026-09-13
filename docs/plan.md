@@ -80,17 +80,19 @@ Sources for every step:
 ### 10. Website Specification audit
 - Gerwin adds the Website Specification MCP server to Claude Code once, then restarts the session so its tools load: `claude mcp add --transport http --scope user specification-website https://mcp.specification.website/mcp`. It is read-only and needs no account or key; it serves the specification's topics and checklist (https://specification.website/mcp/), and Claude does the checking.
 - Claude fetches the full checklist (`get_checklist`, every category) and checks the local production build (`npm run build`, then `node .output/server/index.mjs`) against it: the page source and response headers, the page in the browser at desktop and phone width, and Lighthouse where it helps.
-- Items a local build cannot answer are listed for later: those a deployment answers (HTTPS and HSTS, the headers Vercel sets, `robots.txt` as served) for the preview in step 12; those that need overeem.io itself (the canonical domain, redirects from old URLs, the link preview) for go-live in step 13. Findings about the text itself wait for the real content in step 11.
+- Items a local build cannot answer are listed for later: those a deployment answers (HTTPS and HSTS, the headers Vercel sets, `robots.txt` as served) for the preview in step 12; those that need overeem.io itself (the canonical domain, redirects from old URLs, the link preview) for go-live in step 13. The real content is already in place, so findings about the text itself are checked in this step too.
 - Claude fixes the obvious findings in this step. Anything it disagrees with, that conflicts with the spec or the design, or that is complex to build, it reports to Gerwin first, with a recommendation, and builds only after his decision.
-- The report lists every checklist item that does not pass, and what happened to it: fixed, deferred to step 11, 12 or 13, or waiting for Gerwin's decision.
+- The report lists every checklist item that does not pass, and what happened to it: fixed, deferred to step 12 or 13, or waiting for Gerwin's decision.
 - **Gerwin validates:** the report, and decides on the reported items; the test plan sections checked in steps 7–9 still pass after the fixes.
 
-### 11. Real content (Gerwin, Claude helps)
-- Gerwin writes `server/assets/content/about.md` from the seven questions in the spec, replacing the dummy.
-- One-off CV conversion with Claude Code, as `docs/cv-conversion-spec.md` allows for v1: `private/cv.pdf` → `server/assets/content/cv.md`, with the required headings and without phone number, date of birth, nationality, home address or photo, replacing the dummy.
-- If the dummy content led to example questions or copy that don't fit the real content, adjust them now.
-- The model's behaviour is checked here, against the real model and the real content, by running the test plan's "Content" and "Languages" questions by hand. The mock-model tests from step 5 cover the code, not this. An automated eval set for these questions stays under the spec's "Later".
-- **Gerwin validates:** reads both files line by line: no personal data that should not be public, and `about.md` answers every example question and every hard question from the test plan. `grep -r "DUMMY CONTENT" server/assets/content` finds nothing. Locally, the "Content" section of the test plan gives answers he would give himself.
+### 11. Confirm the real content (Gerwin)
+The real content arrived early, during step 7, and was checked with Claude on 2026-09-13:
+- `cv.md` against `private/cv.pdf`: verbatim, with the required headings and without phone number, date of birth, nationality, home address or photo. The PII check (phone pattern and `CV_PII_DENYLIST`) passes on both content files.
+- `about.md` covers the seven topics from the spec; the example questions and the page copy fit the real content.
+- The test plan's "Content" and "Languages" questions ran against the real model. The fixes that came out of it are in: factual corrections in `about.md`, behaviour rule 9 (plain text, short answers) and the removal of bold markers in the UI. An automated eval set for these questions stays under the spec's "Later".
+
+What is left is Gerwin's confirmation:
+- **Gerwin validates:** reads both files line by line one last time: no personal data that should not be public, and wording he stands behind, including the parts Claude drafted (the review gate section and "Deze chat"). Asks a few "Content" questions in the UI and gets answers he would give himself. `grep -r "DUMMY CONTENT" server/assets/content` finds nothing.
 
 ### 12. Deploy to a preview, README (deploy)
 - Import the repository in Vercel, function region `fra1`, environment variables from `.env.example` (production and preview), Web Analytics on.
