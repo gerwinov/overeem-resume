@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { MAX_HISTORY_CHARS } from '../server/constants/chat'
 import { parseChatRequest } from '../server/utils/chat-request'
-import { MAX_MESSAGES } from '../shared/constants/chat'
+import { MAX_MESSAGES } from '#shared/constants/chat'
 
 const user = (text: string, id = 'u') => ({ id, role: 'user', parts: [{ type: 'text', text }] })
 const assistant = (text: string, id = 'a') => ({ id, role: 'assistant', parts: [{ type: 'step-start' }, { type: 'text', text }] })

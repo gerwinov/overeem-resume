@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildThread, canRetry, erroredTurnIds, isFailedTurn, turnAnnouncement } from '../app/utils/chat-view'
-import type { CvChatMessage } from '../shared/types/chat'
+import type { CvChatMessage } from '#shared/types/chat'
 
 const user = (id: string, text: string): CvChatMessage => ({ id, role: 'user', parts: [{ type: 'text', text }] })
 const assistant = (id: string, parts: unknown[], finishReason?: string): CvChatMessage =>

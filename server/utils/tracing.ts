@@ -1,7 +1,7 @@
 import { Client } from 'langsmith'
 import { LangSmithTelemetry } from 'langsmith/experimental/vercel'
 import type { Telemetry } from 'ai'
-import type { Locale } from '../../shared/types/chat'
+import type { Locale } from '#shared/types/chat'
 import type { ChatTracing } from '../types/chat'
 
 /**

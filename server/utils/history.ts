@@ -1,6 +1,6 @@
 import type { UIMessage } from 'ai'
-import type { MessagePart } from '../../shared/types/chat'
-import { isMeetingPart } from '../../shared/utils/chat'
+import type { MessagePart } from '#shared/types/chat'
+import { isMeetingPart } from '#shared/utils/chat'
 
 const hasOutput = (part: MessagePart) =>
   'state' in part && (part.state === 'output-available' || part.state === 'output-error')

@@ -1,6 +1,6 @@
 import { convertToModelMessages, createUIMessageStreamResponse, isStepCount, streamText, toUIMessageStream } from 'ai'
-import type { CvChatMessage } from '../../shared/types/chat'
-import { hasSuccessfulSend } from '../../shared/utils/chat'
+import type { CvChatMessage } from '#shared/types/chat'
+import { hasSuccessfulSend } from '#shared/utils/chat'
 import { PROVIDERS } from '../constants/chat'
 import type { ChatDeps, ChatTracing } from '../types/chat'
 import { parseChatRequest } from './chat-request'

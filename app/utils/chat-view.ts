@@ -1,6 +1,6 @@
 import type { ChatStatus } from 'ai'
-import type { CvChatMessage, MessagePart } from '../../shared/types/chat'
-import { hasSuccessfulSend, isMeetingPart, isSuccessfulSend } from '../../shared/utils/chat'
+import type { CvChatMessage, MessagePart } from '#shared/types/chat'
+import { hasSuccessfulSend, isMeetingPart, isSuccessfulSend } from '#shared/utils/chat'
 import { NOTICE_KEYS } from '../constants/chat'
 import type { AssistantBlock, ChatErrorKind, ThreadItem } from '../types/chat'
 

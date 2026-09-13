@@ -109,7 +109,7 @@ server/
   types/, constants/       # types and constants that several server files use (handleChat's dependencies, the meeting types, the provider order, the history limit)
 ```
 
-A type or constant that more than one file uses lives in a `types/` or `constants/` folder: under `shared/` when page and server both use it, otherwise under `app/` or `server/`. Anything used by one file only stays in that file. These folders are auto-imported like `utils/` (`imports.dirs` and `nitro.imports.dirs` in `nuxt.config.ts`). Files the unit tests load (`app/utils/`, `server/utils/`, `shared/`) still import explicitly, because the tests run without Nuxt.
+A type or constant that more than one file uses lives in a `types/` or `constants/` folder: under `shared/` when page and server both use it, otherwise under `app/` or `server/`. Anything used by one file only stays in that file. These folders are auto-imported like `utils/` (`imports.dirs` and `nitro.imports.dirs` in `nuxt.config.ts`). Files the unit tests load (`app/utils/`, `server/utils/`, `shared/`) still import explicitly, because the tests run without Nuxt. Code outside `shared/` (page, server and tests) imports it only through Nuxt's `#shared` alias (also defined in `vitest.config.ts`), never by a relative path: Nuxt's server build treats `shared/` as external, and a relative import can come out of it as a path that no longer resolves (it broke a Vercel build; `test/imports.test.ts` guards it). The tests have their own `test/tsconfig.json`, based on the server project, and `npm run typecheck` checks them too.
 
 The content files live in Nitro's server assets (`useStorage('assets:server')`), so they are bundled with the server function and never shipped to the client.
 

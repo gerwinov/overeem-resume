@@ -68,14 +68,14 @@ describe('handleChat: conversation log', () => {
   })
 
   it('gives a request without an ID its own random thread', async () => {
-    const tracing = vi.fn(() => undefined)
+    const tracing = vi.fn<NonNullable<ChatDeps['tracing']>>(() => undefined)
     await (await handleChat(body(), deps({ tracing }).deps)).text()
     expect(tracing.mock.calls[0]![0].chatId).toMatch(/^[0-9a-f-]{36}$/)
   })
 
   it('replaces a malformed chat ID with a fresh one instead of rejecting the request', async () => {
     for (const id of ['has spaces', 'x'.repeat(65), '../etc', 42]) {
-      const tracing = vi.fn(() => undefined)
+      const tracing = vi.fn<NonNullable<ChatDeps['tracing']>>(() => undefined)
       const response = await handleChat(body({ id }), deps({ tracing }).deps)
       expect(response.status).toBe(200)
       await response.text()

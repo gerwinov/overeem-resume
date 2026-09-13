@@ -33,12 +33,13 @@ const meeting: MeetingRequest = { name: 'Sanne de Vries', email: 'sanne@voorbeel
 
 const body = (messages: unknown[] = [{ id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Ja, verstuur maar.' }] }]) => ({ locale: 'nl', messages })
 
-function deps(model: MockLanguageModelV4, overrides: Partial<ChatDeps> = {}) {
+// `log` is always this mock, so tests can read what was logged; overriding it is a type error.
+function deps(model: MockLanguageModelV4, overrides: Partial<Omit<ChatDeps, 'log'>> = {}) {
   return {
     model,
     loadContent: async () => ({ cv: '# Profiel\nDummy CV', about: 'Dummy about' }),
     sendMeetingEmail: vi.fn(async () => {}),
-    log: vi.fn(),
+    log: vi.fn<(line: string) => void>(),
     now: () => new Date('2026-09-12T10:00:00Z'),
     ...overrides,
   } satisfies ChatDeps

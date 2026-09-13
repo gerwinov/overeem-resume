@@ -1,0 +1,9 @@
+{
+  // The unit tests and the Vitest config run in Node, outside Nuxt: the server project's settings
+  // give them Node's types and the #shared alias.
+  "extends": "../.nuxt/tsconfig.server.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["./**/*.ts", "../vitest.config.ts"]
+}

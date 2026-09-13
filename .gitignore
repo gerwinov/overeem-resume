@@ -26,3 +26,6 @@ logs
 
 # Source CV with personal data (see docs/cv-conversion.md)
 private/
+
+# TypeScript incremental build info
+*.tsbuildinfo

@@ -21,7 +21,8 @@ describe('locales', () => {
   // vue-i18n reads some characters as syntax; rendered through it, every string must come out as written.
   it.each(['nl', 'en'])('%s renders every string exactly as written', (code) => {
     const messages = read(code)
-    const { t } = createI18n({ legacy: false, locale: code, messages: { [code]: messages }, strictMessage: true }).global
+    const options = { legacy: false, locale: code, messages: { [code]: messages }, strictMessage: true } as Parameters<typeof createI18n>[0]
+    const { t } = createI18n(options).global
     for (const path of paths(messages)) {
       const source = at(messages, path) as string
       const params = Object.fromEntries([...source.matchAll(/\{(\w+)\}/g)].map(([, name]) => [name, `{${name}}`]))

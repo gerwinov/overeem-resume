@@ -35,7 +35,7 @@ describe('createMeetingTool', () => {
   it('names the invalid fields, not their values, and sends nothing', async () => {
     const send = vi.fn(async () => {})
     const meetingTool = createMeetingTool({ alreadySent: false, locale: 'nl', send, log: vi.fn() })
-    const result = await meetingTool.execute!({ ...valid, email: 'not-an-address', message: '' }, { toolCallId: 't1', messages: [] })
+    const result = await meetingTool.execute!({ ...valid, email: 'not-an-address', message: '' }, { toolCallId: 't1', messages: [], context: {} })
     expect(result).toEqual({ ok: false, reason: 'invalid_input', fields: ['email', 'message'] })
     expect(JSON.stringify(result)).not.toContain('not-an-address')
     expect(send).not.toHaveBeenCalled()

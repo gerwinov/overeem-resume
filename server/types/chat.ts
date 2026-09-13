@@ -1,5 +1,5 @@
 import type { LanguageModel, Telemetry } from 'ai'
-import type { Locale } from '../../shared/types/chat'
+import type { Locale } from '#shared/types/chat'
 import type { SendMeetingEmail } from './meeting'
 
 export type ChatTracing = {

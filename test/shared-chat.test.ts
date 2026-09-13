@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { UIMessage } from 'ai'
-import { hasSuccessfulSend } from '../shared/utils/chat'
+import { hasSuccessfulSend } from '#shared/utils/chat'
 
 const user = (text: string): UIMessage => ({ id: `u-${text}`, role: 'user', parts: [{ type: 'text', text }] })
 const assistant = (parts: unknown[]): UIMessage => ({ id: 'a', role: 'assistant', parts } as UIMessage)

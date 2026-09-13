@@ -1,7 +1,7 @@
 import { tool } from 'ai'
 import { Resend } from 'resend'
 import { z } from 'zod'
-import type { Locale } from '../../shared/types/chat'
+import type { Locale } from '#shared/types/chat'
 import type { MeetingRequest, SendMeetingEmail } from '../types/meeting'
 
 // Header-injection rules from docs/spec.md, "Tool: request_meeting".
