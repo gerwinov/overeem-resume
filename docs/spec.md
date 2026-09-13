@@ -301,7 +301,7 @@ In code, on top of that: at most one email per request, and one per conversation
 - No 24-hour or daily limits. One IP can trigger up to 20 meeting emails per 10 minutes, until Resend's daily limit stops sending; genuine requests that day then fail and get the email address instead. The worst case is a flooded inbox for a day, not a bill: Resend's free plan has no overage pricing.
 - No daily cost cap. Someone using many IPs can use up the credit balance; the chat is then down until Gerwin tops up.
 - The firewall counts per Vercel region and only applies to the production deployment, so it cannot be tested locally.
-- Vercel's Bot Protection is on, in challenge mode: anything that is not a real browser (curl, uptime monitors, tools that read `robots.txt` or `/.well-known/security.txt`) gets a challenge (HTTP 429, `x-vercel-mitigated: challenge`); real browsers pass without noticing, and Vercel lets verified crawlers through. A deliberate choice by Gerwin. An external uptime check therefore needs an exception in the firewall, and the link preview is checked with LinkedIn's Post Inspector at go-live.
+- Vercel's Bot Protection is on, in challenge mode: anything that is not a real browser (curl, scripts, tools that read `robots.txt` or `/.well-known/security.txt`) gets a challenge (HTTP 429, `x-vercel-mitigated: challenge`); real browsers pass without noticing, and so do the bots in Vercel's verified-bot directory (search engines, link previews such as LinkedInBot). A deliberate choice by Gerwin. Hand-made test requests to production are therefore sent from the browser.
 - If abuse shows up: add Upstash Redis with `@upstash/ratelimit` for per-IP 24-hour limits and global daily caps.
 
 **Behaviour**
@@ -376,7 +376,6 @@ Transfers outside the EU are covered by each service's data processing agreement
 | Tokens, cost, latency and provider per request | Vercel AI Gateway dashboard (request logs, credit balance) |
 | Meeting emails sent or failed | Resend dashboard |
 | Full conversations: what visitors ask and what the chat answered | LangSmith, thread view (see "Conversation log") |
-
 ## Env variables
 
 `.env.example` in the repository root lists every variable below (plus `CV_PII_DENYLIST` from `docs/cv-conversion-spec.md`), each with a comment on what it is, where to get it and where it is needed; `README.md` explains how to set up `.env` from it and how to configure the variables on Vercel. The build order is in `docs/plan.md`.
@@ -408,6 +407,7 @@ The site was checked against the Website Specification (https://specification.we
 - **White text on the brand yellow**, below AA contrast; see "Theme".
 - **No privacy link in the footer** (the spec asks for one on every page): the privacy note is linked from the small print below the input, right where visitors type; see "Privacy".
 - **Bot Protection challenges non-browser clients**, so tools that read `robots.txt`, `sitemap.xml` or `security.txt` without a browser may be stopped; see "Rate limiting".
+- **No external uptime check**, by Gerwin's choice; Vercel's dashboards show errors after the fact (see "Monitoring").
 
 ## Test plan (before sharing the link)
 
@@ -484,11 +484,11 @@ The site was checked against the Website Specification (https://specification.we
 - [ ] Enter sends on a physical keyboard, Shift+Enter adds a line break; on a phone Enter adds a line break; the counter appears at 900 characters and sending stops above 1000
 - [ ] With a screen reader (VoiceOver): a complete answer, the confirmation line and error messages are announced once, not word by word
 - [ ] Credit balance used up or gateway unreachable (simulated) → a plain message pointing to the footer's LinkedIn and email
-- [ ] Link preview checked in LinkedIn's Post Inspector: bilingual title, description and image
+- [ ] Link preview checked in LinkedIn's Post Inspector: English title, description and image
 - [ ] Functions run in `fra1` (Vercel project settings)
 - [ ] Web Analytics shows page views and sets no cookie of its own
-- [ ] Old URLs of the current site that are shared or indexed still work or redirect
-- [ ] Live on overeem.io
+- [ ] A URL of the previous site (none is kept) → the 404 page in the UI language, with a link to the chat
+- [ ] `www.overeem.io` redirects to `https://overeem.io/`; a CAA record allows only Let's Encrypt; DNSSEC validates- [ ] Live on overeem.io
 
 ## Definition of done
 

@@ -101,9 +101,9 @@ What is left is Gerwin's confirmation:
 - **Gerwin validates:** follows the README's deploy section; the preview URL works; the full test plan except "Limits" and the go-live items passes on the preview.
 
 ### 13. Go live
-- List the URLs of the current overeem.io that are shared or indexed; keep or redirect each.
-- Point the domain from GitHub Pages to Vercel, check the link preview in LinkedIn's Post Inspector (Bot Protection must let LinkedIn's crawler through).
-- The Website Specification items deferred to go-live in step 10 are checked on overeem.io: redirects for the old URLs, the canonical domain, the link preview, a DNS CAA record (and DNSSEC if the registrar offers it), and an external uptime check (with a firewall exception, since Bot Protection challenges it).
+- The old overeem.io is replaced as a whole: Gerwin keeps none of its URLs, so they get the 404 page (with its link to the chat) instead of redirects.
+- Point the domain from GitHub Pages to Vercel (README, "Domain"), check the link preview in LinkedIn's Post Inspector (LinkedInBot is one of the verified bots that Bot Protection lets through).
+- The Website Specification items deferred to go-live in step 10 are checked on overeem.io: the canonical domain (`www` redirects to the bare domain), the link preview, and a DNS CAA record (DNSSEC is already on). No external uptime check: Gerwin's choice (see the spec, "Website Specification").
 - **Gerwin validates:** the "Limits" section and the remaining test plan items on production; the definition of done in the spec.
 
 ## After launch (not part of this plan)

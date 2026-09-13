@@ -103,21 +103,22 @@ Vercel protects preview URLs with **Vercel Authentication** by default (**Settin
 
 **Firewall → Configure → New Rule:** if *Request Path* equals `/api/chat`, then **Rate Limit**: 20 requests per 10 minutes, fixed window, keyed on IP address, action *Too Many Requests* (429). The firewall only applies to the production deployment.
 
-**Bot Protection** (Firewall → Bot Management) is on, in challenge mode: real browsers pass without noticing, verified crawlers are let through, and everything else (curl, uptime monitors) gets a challenge. An external uptime check needs its own exception rule.
+**Bot Protection** (Firewall → Bot Management) is on, in challenge mode: real browsers pass without noticing, and so do the bots in [Vercel's verified-bot directory](https://vercel.com/docs/bot-management#verified-bots) (search engines, LinkedIn's link preview); everything else (curl, scripts) gets a challenge. Hand-made requests to production, such as the "Limits" tests, are therefore sent from the browser's console on the site itself.
 
 ### Domain
 
-Moving `overeem.io` from GitHub Pages to Vercel happens at go-live (step 13 of the plan):
+Moving `overeem.io` from GitHub Pages to Vercel happens at go-live (step 13 of the plan). The DNS stays where it is; only the web records change.
 
-1. **Project → Settings → Domains:** add `overeem.io` and `www.overeem.io` (redirect `www` to the bare domain).
-2. At the DNS provider, replace the GitHub Pages records with the ones Vercel shows (an `A` record for the bare domain, a `CNAME` for `www`). Keep the Resend records (SPF, DKIM) as they are.
-3. Wait until Vercel shows the domain as valid; it then issues the certificate itself.
-4. Add a CAA record that allows Vercel's certificate authority, if the DNS provider supports CAA.
+1. **Project → Settings → Domains:** add `overeem.io` and `www.overeem.io` (redirect `www` to the bare domain). Vercel then shows the records to set.
+2. At the DNS provider, replace the GitHub Pages `A` records on the bare domain with the `A` record Vercel shows, and point `www` with a `CNAME` to the value Vercel shows. Leave the mail records alone: the mail provider's `MX` and `TXT` records, and Resend's records on `send` and `resend._domainkey`.
+3. Wait until Vercel shows both domains as valid; it then issues the certificates itself (Let's Encrypt). Until the old records' TTL has passed, some visitors still get the old site.
+4. Add a CAA record on the bare domain: `0 issue "letsencrypt.org"`. It covers every name under `overeem.io`, so a service that ever needs a certificate for a subdomain from another authority needs its own `issue` line.
+5. Only after the switch, remove the custom domain from the old GitHub Pages site. Removing it while the DNS still points to GitHub would let another GitHub user claim the domain.
 
 ### Check a deployment
 
 - The page loads in both languages and both themes, and a question gets a streamed answer.
-- `curl -sI https://<deployment-url>/` shows the security headers, `Cache-Control: private, no-cache`, HSTS and compression (see `docs/spec.md`, "Safety & cost").
+- The page's response headers in the browser's network tab (Bot Protection challenges `curl` on production) show the security headers, `Cache-Control: private, no-cache`, HSTS and compression (see `docs/spec.md`, "Safety & cost").
 - The conversation appears in LangSmith as one thread (under the project for that environment).
 - **Observability** (Vercel) shows the `/api/chat` invocations running in `fra1`, and the AI Gateway dashboard shows the requests and credit balance.
 - A meeting request arrives in the inbox (this sends a real email).
