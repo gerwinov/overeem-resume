@@ -76,11 +76,12 @@ describe('handleChat: the route', () => {
     expect(list.find(e => e.type === 'finish')?.messageMetadata).toEqual({ finishReason: 'stop' })
   })
 
-  it('sends the gateway options, the output cap and the system prompt to the model', async () => {
+  it('sends the gateway options, thinking off, the output cap and the system prompt to the model', async () => {
     const model = scriptedModel(textStep('Hallo'))
     await events(await handleChat(body(), deps(model)))
     const call = model.doStreamCalls[0]!
     expect(call.providerOptions?.gateway).toEqual({ order: PROVIDERS, only: PROVIDERS, disallowPromptTraining: true })
+    expect(call.providerOptions?.anthropic).toEqual({ thinking: { type: 'disabled' } })
     expect(call.maxOutputTokens).toBe(800)
     expect(call.prompt[0]).toMatchObject({ role: 'system' })
     expect(JSON.stringify(call.prompt[0])).toContain('<cv>')

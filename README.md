@@ -1,6 +1,6 @@
 # overeem-resume
 
-A chat on [overeem.io](https://overeem.io) where visitors ask about Gerwin Overeem's experience, how he works and what he is looking for, and can request an intro meeting. Nuxt 4 on Vercel, with Claude Haiku through Vercel AI Gateway.
+A chat on [overeem.io](https://overeem.io) where visitors ask about Gerwin Overeem's experience, how he works and what he is looking for, and can request an intro meeting. Nuxt 4 on Vercel, with Claude Sonnet 5 through Vercel AI Gateway.
 
 - What it does and why: [`docs/spec.md`](docs/spec.md)
 - How it looks: [`docs/design/index.html`](docs/design/index.html) (open it in a browser)
@@ -27,7 +27,7 @@ A chat on [overeem.io](https://overeem.io) where visitors ask about Gerwin Overe
    cp .env.example .env
    ```
 
-   The chat needs `AI_GATEWAY_API_KEY` (and AI Gateway credits: Claude Haiku is not in the free tier). Meeting requests also need `RESEND_API_KEY`, `MEETING_RECIPIENT` and `MEETING_FROM`; without them the chat still works, but a meeting request fails and the chat offers the email address instead.
+   The chat needs `AI_GATEWAY_API_KEY` (and AI Gateway credits: Claude Sonnet 5 is not in the free tier). Meeting requests also need `RESEND_API_KEY`, `MEETING_RECIPIENT` and `MEETING_FROM`; without them the chat still works, but a meeting request fails and the chat offers the email address instead.
 
 3. Start the dev server and open http://localhost:3000:
 

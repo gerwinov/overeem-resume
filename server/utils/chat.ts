@@ -88,7 +88,12 @@ export async function handleChat(body: unknown, deps: ChatDeps): Promise<Respons
       // The last call may only answer in text, so every tool result is followed by an answer.
       prepareStep: ({ stepNumber }) => (stepNumber === MAX_MODEL_CALLS - 1 ? { toolChoice: 'none' } : undefined),
       maxOutputTokens: MAX_OUTPUT_TOKENS,
-      providerOptions: { gateway: { order: PROVIDERS, only: PROVIDERS, disallowPromptTraining: true } },
+      providerOptions: {
+        gateway: { order: PROVIDERS, only: PROVIDERS, disallowPromptTraining: true },
+        // Sonnet 5 thinks by default, and thinking counts toward maxOutputTokens. The gateway applies
+        // this on all four providers.
+        anthropic: { thinking: { type: 'disabled' } },
+      },
       telemetry: tracing ? { integrations: [tracing.integration] } : { isEnabled: false },
       // Replaces the SDK's default, which logs the whole error.
       onError: ({ error }) => log(describeError(error)),
