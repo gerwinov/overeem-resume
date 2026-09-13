@@ -3,22 +3,23 @@
 **Gerwin Overeem** · Senior Fullstack Developer
 Apeldoorn · gerwin@overeem.io · https://linkedin.com/in/gerwinovereem
 
-Ik ben een senior developer met 13 jaar ervaring, van CRM-consultancy doorgegroeid naar fullstack development voor grote customer-facing websites. Ik bouw AI-native: ik schrijf de specificaties, Claude Code bouwt en ik bewaak de kwaliteit. Mijn focus ligt steeds meer op applied AI: LLM-integraties, chatinterfaces en conversational UX. Ik ben analytisch sterk en gewend om techniek te vertalen naar wat een organisatie ermee kan.
+Ik ben een senior developer met 13 jaar ervaring, van CRM-consultancy doorgegroeid naar fullstack development voor grote customer-facing websites. Ik bouw AI-native: ik schrijf de specificaties, Claude Code bouwt en ik bewaak de kwaliteit. Mijn focus ligt steeds meer op applied AI: LLM-integraties, chatinterfaces en conversational UX. Ik ben analytisch sterk, communicatief vaardig en gewend om techniek te vertalen naar wat een organisatie ermee kan.
 
 # Expertise
 
 ## AI-native development
 
-Ik bouw software met Claude Code. De kwaliteitsborging daaromheen bouw ik zelf:
+Ik bouw software met Claude Code:
 
-- Adversarial review gate: een tweede model reviewt elke wijziging van Claude en blokkeert tot de bevindingen zijn opgelost of bewust zijn gewaived. Inclusief bescherming tegen eindeloze blokkeerlussen.
+- Spec-driven development; ik specificeer, Claude bouwt.
+- Adversarial review gate: een tweede model reviewt elke wijziging van Claude en blokkeert tot de bevindingen zijn opgelost.
 - Parallel werken aan meerdere taken met git worktrees, zodat wijzigingen geïsoleerd blijven en los te reviewen zijn.
 
 Recent ontwierp ik de architectuur voor een e-learningplatform van een patiëntenorganisatie, met een EU-gehoste, model-agnostische RAG-assistent (pgvector) en strikte scheiding van content en persoonsgegevens.
 
 ## Technisch leiderschap
 
-Ik neem graag verantwoordelijkheid voor de technische koers. Bij Esprit was ik component lead, bij VodafoneZiggo Priority lead developer met aansturing van een externe partij, en bij ANWB startte ik een nieuwe architectuur op voor de applicaties van mijn team, met een config-gedreven library voor formulieren. Bij VodafoneZiggo coachte ik een junior developer, op zijn eigen verzoek. In SCRUM-teams draag ik bij aan betere processen en een goede werksfeer.
+Ik neem graag verantwoordelijkheid voor de technische koers. Bij Esprit was ik component lead, bij VodafoneZiggo Priority lead developer met aansturing van een externe partij. Bij ANWB startte ik een nieuwe architectuur op voor de applicaties van mijn team, met een config-gedreven library voor formulieren. Bij VodafoneZiggo coachte ik een junior developer, op zijn eigen verzoek. In SCRUM-teams draag ik bij aan betere processen en een goede werksfeer.
 
 # Techniek
 
@@ -34,7 +35,7 @@ Ik neem graag verantwoordelijkheid voor de technische koers. Bij Esprit was ik c
 
 **Fullstack developer** · Zwolle · 2025 – heden
 
-Bij Vergelijk.nl heb ik de website opnieuw opgebouwd in Nuxt/TypeScript/Tailwind, en ben ik volledig verantwoordelijk voor de implementatie en het beheer. De nieuwe site haalt alle Core Web Vitals, met PageSpeed-scores van 90+, onder meer door API-responses en SSR-renders in Redis te cachen. Ik vertaalde het nieuwe UI-design naar de frontend, maak de bijbehorende UX-keuzes en voerde samen met de developers van Vergelijk.nl optimalisaties door op de API's. Ook werkte ik mee aan de CI/CD-pipeline naar OpenShift op AWS. Ik ontwikkel hier met mijn eigen Claude Code-workflow, inclusief review gate.
+Bij Vergelijk.nl heb ik de website opnieuw opgebouwd in Nuxt/TypeScript/Tailwind, en ben ik volledig verantwoordelijk voor de implementatie en het beheer. De nieuwe site haalt alle Core Web Vitals, met PageSpeed-scores van 90+, onder meer door API-responses en SSR-renders in Redis te cachen. Ik vertaalde het nieuwe UI-design naar de frontend, maakte de bijbehorende UX-keuzes en voerde samen met de developers van Vergelijk.nl optimalisaties door op de API's. Ook werkte ik mee aan de CI/CD-pipeline naar OpenShift op AWS. Ik ontwikkel hier met mijn eigen Claude Code-workflow, inclusief review gate.
 
 *Tools/methoden:* Nuxt, TypeScript, Node.js, API-architectuur, Claude Code, Docker, Redis, Vue, Vue Query (TanStack), Tailwind, CI/CD, OpenShift (AWS)
 
