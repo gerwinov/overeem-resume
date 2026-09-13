@@ -63,7 +63,7 @@ async function onNewConversation() {
       />
     </main>
     <div ref="pageEnd">
-      <SiteFooter with-privacy @open-privacy="privacy?.open($event)" />
+      <SiteFooter />
     </div>
     <div class="sr-only" aria-live="polite" aria-atomic="true">{{ announcement }}</div>
     <PrivacyDialog ref="privacy" :chat-id="chatId" />

@@ -301,6 +301,7 @@ In code, on top of that: at most one email per request, and one per conversation
 - No 24-hour or daily limits. One IP can trigger up to 20 meeting emails per 10 minutes, until Resend's daily limit stops sending; genuine requests that day then fail and get the email address instead. The worst case is a flooded inbox for a day, not a bill: Resend's free plan has no overage pricing.
 - No daily cost cap. Someone using many IPs can use up the credit balance; the chat is then down until Gerwin tops up.
 - The firewall counts per Vercel region and only applies to the production deployment, so it cannot be tested locally.
+- Vercel's Bot Protection is on, in challenge mode: anything that is not a real browser (curl, uptime monitors, tools that read `robots.txt` or `/.well-known/security.txt`) gets a challenge (HTTP 429, `x-vercel-mitigated: challenge`); real browsers pass without noticing, and Vercel lets verified crawlers through. A deliberate choice by Gerwin. An external uptime check therefore needs an exception in the firewall, and the link preview is checked with LinkedIn's Post Inspector at go-live.
 - If abuse shows up: add Upstash Redis with `@upstash/ratelimit` for per-IP 24-hour limits and global daily caps.
 
 **Behaviour**
@@ -357,7 +358,7 @@ The site sets two functional cookies, `lang` for the language and `theme` for th
 
 Transfers outside the EU are covered by each service's data processing agreement (standard contractual clauses, or the EU–US Data Privacy Framework where the company is certified). Check each service's current terms before launch and name them in the privacy note.
 
-**The privacy note** is a dialog opened from the "Privacy" link below the input field and the one in the footer, in the UI language. It is a proper modal: focus moves into it and stays there, the page behind it does not scroll, Esc and a close button close it, and focus returns to the link. Its contents, in this order:
+**The privacy note** is a dialog opened from the "Privacy" link below the input field, in the UI language. It is a proper modal: focus moves into it and stays there, the page behind it does not scroll, Esc and a close button close it, and focus returns to the link. Its contents, in this order:
 
 1. The date it was last updated, who runs the chat (Gerwin) and how to reach him (the email address from the CV). No postal address: Gerwin is a private person, and email is a valid way to reach the controller.
 2. What happens to a conversation: the table above, in plain language, including where each service processes data and what covers transfers outside the EU. Conversation storage is one row among the others, not a headline.
@@ -405,6 +406,8 @@ The site was checked against the Website Specification (https://specification.we
 - **Global Privacy Control (`Sec-GPC`) does not change what is logged:** every conversation is kept in the conversation log, on the basis of legitimate interest (see "Conversation log").
 - **No postal address in the privacy note**; see "Privacy".
 - **White text on the brand yellow**, below AA contrast; see "Theme".
+- **No privacy link in the footer** (the spec asks for one on every page): the privacy note is linked from the small print below the input, right where visitors type; see "Privacy".
+- **Bot Protection challenges non-browser clients**, so tools that read `robots.txt`, `sitemap.xml` or `security.txt` without a browser may be stopped; see "Rate limiting".
 
 ## Test plan (before sharing the link)
 

@@ -103,6 +103,8 @@ Vercel protects preview URLs with **Vercel Authentication** by default (**Settin
 
 **Firewall → Configure → New Rule:** if *Request Path* equals `/api/chat`, then **Rate Limit**: 20 requests per 10 minutes, fixed window, keyed on IP address, action *Too Many Requests* (429). The firewall only applies to the production deployment.
 
+**Bot Protection** (Firewall → Bot Management) is on, in challenge mode: real browsers pass without noticing, verified crawlers are let through, and everything else (curl, uptime monitors) gets a challenge. An external uptime check needs its own exception rule.
+
 ### Domain
 
 Moving `overeem.io` from GitHub Pages to Vercel happens at go-live (step 13 of the plan):
