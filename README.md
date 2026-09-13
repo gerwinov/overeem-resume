@@ -50,6 +50,7 @@ app/                     # the page: components, composables, styles
 i18n/locales/            # all UI copy, Dutch and English
 server/                  # the chat API and its helpers
   assets/content/        # the CV and about.md the chat answers from
+shared/                  # what page and server share: limits, locales, message types
 public/                  # favicons and images from overeem.io
 docs/                    # spec, plan, design and the CV conversion
 test/                    # unit tests
@@ -57,4 +58,64 @@ test/                    # unit tests
 
 ## Deploy
 
-To be written in step 12 of the plan.
+The site runs on Vercel (Hobby). Every push to `main` deploys to production; every other branch and pull request gets its own preview URL.
+
+### Connect the repository
+
+1. In Vercel: **Add New… → Project → Import Git Repository**, and pick this repository.
+2. Vercel detects Nuxt; keep the default build settings.
+3. Add the environment variables below *before* the first deploy, then deploy.
+
+The function region (`fra1`, Frankfurt) is set in `nuxt.config.ts` (`nitro.vercel.functions.regions`), not in the dashboard.
+
+### Environment variables
+
+Set these under **Project → Settings → Environment Variables**, for both **Production** and **Preview**:
+
+| Variable | Value |
+|---|---|
+| `RESEND_API_KEY` | the Resend API key |
+| `MEETING_RECIPIENT` | Gerwin's own email address |
+| `MEETING_FROM` | a sender on the verified domain, e.g. `cv-chat@overeem.io` |
+| `NUXT_PUBLIC_CONTACT_EMAIL` | the email address shown in the footer (the one in the CV) |
+| `NUXT_PUBLIC_LINKEDIN_URL` | the LinkedIn profile URL |
+| `LANGSMITH_TRACING` | `true` |
+| `LANGSMITH_API_KEY` | the LangSmith API key |
+| `LANGSMITH_ENDPOINT` | `https://eu.api.smith.langchain.com` |
+| `LANGSMITH_PROJECT` | `cv-chat` for Production; a separate project such as `cv-chat-preview` for Preview keeps test conversations apart |
+
+Do **not** set these on Vercel:
+
+- `AI_GATEWAY_API_KEY`: on Vercel the gateway is reached with the deployment's own OIDC token (on by default under **Settings → Security → Secure backend access with OIDC federation**).
+- `CV_PII_DENYLIST`: it holds personal data, and Vercel exposes every variable to the running functions. It is only used locally.
+
+A change to a variable takes effect with the next deployment (**Deployments → … → Redeploy**).
+
+### Web Analytics
+
+**Project → Analytics → Enable.** The page loads Vercel's script only in builds on Vercel; it sets no cookies.
+
+### Preview deployments
+
+Vercel protects preview URLs with **Vercel Authentication** by default (**Settings → Deployment Protection**): only people logged in to the Vercel team can open them. That is fine for testing. For automated checks from outside, create a **Protection Bypass for Automation** secret there and send it as the `x-vercel-protection-bypass` header. Vercel also adds `X-Robots-Tag: noindex` to preview URLs, so they are not indexed.
+
+### Rate limit (production)
+
+**Firewall → Configure → New Rule:** if *Request Path* equals `/api/chat`, then **Rate Limit**: 20 requests per 10 minutes, fixed window, keyed on IP address, action *Too Many Requests* (429). The firewall only applies to the production deployment.
+
+### Domain
+
+Moving `overeem.io` from GitHub Pages to Vercel happens at go-live (step 13 of the plan):
+
+1. **Project → Settings → Domains:** add `overeem.io` and `www.overeem.io` (redirect `www` to the bare domain).
+2. At the DNS provider, replace the GitHub Pages records with the ones Vercel shows (an `A` record for the bare domain, a `CNAME` for `www`). Keep the Resend records (SPF, DKIM) as they are.
+3. Wait until Vercel shows the domain as valid; it then issues the certificate itself.
+4. Add a CAA record that allows Vercel's certificate authority, if the DNS provider supports CAA.
+
+### Check a deployment
+
+- The page loads in both languages and both themes, and a question gets a streamed answer.
+- `curl -sI https://<deployment-url>/` shows the security headers, `Cache-Control: private, no-cache`, HSTS and compression (see `docs/spec.md`, "Safety & cost").
+- The conversation appears in LangSmith as one thread (under the project for that environment).
+- **Observability** (Vercel) shows the `/api/chat` invocations running in `fra1`, and the AI Gateway dashboard shows the requests and credit balance.
+- A meeting request arrives in the inbox (this sends a real email).

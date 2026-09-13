@@ -44,6 +44,9 @@ export default defineNuxtConfig({
     imports: {
       dirs: ['server/types', 'server/constants', 'shared/constants'],
     },
+    vercel: {
+      functions: { regions: ['fra1'] },
+    },
   },
 
   // Title and description follow the UI language (app/app.vue); everything here is the same for both.
